@@ -25,7 +25,7 @@ const sendError = (res, error, message, data) => {
     if (data) {
         response.data = data;
     }
-    return res.status(error.statusCode || 500).json(response);
+    return response;
 };
 
 module.exports = { sendSuccessGet, sendSuccessPost, sendError };
