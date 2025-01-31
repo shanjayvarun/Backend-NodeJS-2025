@@ -4,7 +4,7 @@ const connectDB = require('./config/db.config');
 const passport = require('passport');
 const userRoutes = require('./folders/routes/user.routes');
 const taskRoutes = require('./folders/routes/task.routes');
-require('./config/passport.config');
+require('./config/passport.config');        
 
 dotenv.config();
 connectDB();
