@@ -1,36 +1,28 @@
-const { body } = require('express-validator');
+const { body, validationResult } = require("express-validator");
 
-exports.loginValidations = [
-    body('email')
-        .trim()
-        .normalizeEmail()
-        .isEmail()
-        .withMessage('Invalid email format'),
-
-    body('password')
-        .trim()
-        .isLength({ min: 6 })
-        .withMessage('Password must be at least 6 characters long')
+const validateUserRegistration = [
+  body("name").notEmpty().withMessage("Name is required"),
+  body("email").isEmail().withMessage("Invalid email format"),
+  body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters"),
+  body("roleType").optional().isIn(["ADMIN", "USER"]).withMessage("Invalid role type"),
+  handleValidationErrors
 ];
 
-exports.createUserValidationRules = [
-    body('name')
-        .notEmpty().withMessage('Name is required')
-        .isString().withMessage('Name must be a string'),
-
-    body('email')
-        .notEmpty().withMessage('Email is required')
-        .isEmail().withMessage('Invalid email format'),
-
-    body('password')
-        .notEmpty().withMessage('Password is required')
-        .isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
-        .matches(/[A-Z]/).withMessage('Password must contain at least one uppercase letter')
-        .matches(/[a-z]/).withMessage('Password must contain at least one lowercase letter')
-        .matches(/[0-9]/).withMessage('Password must contain at least one number')
-        .matches(/[@$!%*?&#]/).withMessage('Password must contain at least one special character'),
-
-    body('roleType')
-        .notEmpty().withMessage('Role type is required')
-        .isIn(['admin', 'user']).withMessage('Invalid role type'),
+const validateUserLogin = [
+  body("email").isEmail().withMessage("Invalid email format"),
+  body("password").notEmpty().withMessage("Password is required"),
+  handleValidationErrors
 ];
+
+function handleValidationErrors(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ status: false, errors: errors.array() });
+  }
+  next();
+}
+
+module.exports = {
+  validateUserRegistration,
+  validateUserLogin
+};
