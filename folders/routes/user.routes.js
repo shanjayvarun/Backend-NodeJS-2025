@@ -5,6 +5,6 @@ const { validateUserLogin, validateUserRegistration } = require('../middlewares/
 const router = express.Router();
 
 router.post("/login", validateUserLogin, userController.loginUser);
-router.post("/users", validateUserRegistration, userController.createUser);
+router.post("/sign-up", validateUserRegistration, userController.createUser);
 
 module.exports = router;

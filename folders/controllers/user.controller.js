@@ -29,8 +29,8 @@ exports.createUser = async (req, res) => {
     };
   } catch (error) {
     if (error.code == 11000) {
-      return sendError(res, 409, 'Email already exists');
+      return sendError(res, res.status(409), 'Email already exists');
     }
-    return sendError(res, 400, 'Failed to register user. Please check your input');
+    return sendError(res, res.status(400), 'Failed to register user. Please check your input');
   }
 };
