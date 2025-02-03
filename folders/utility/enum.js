@@ -1,4 +1,5 @@
 const TASKSTATUS = {
+    NEW : 'NEW',
     PENDING: 'PENDING',
     COMPLETED: 'COMPLETED'
 }

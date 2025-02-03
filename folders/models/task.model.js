@@ -5,7 +5,7 @@ const taskSchema = new mongoose.Schema(
     {
         title: { type: String, required: true },
         description: { type: String, required: true },
-        status: { type: String, enum: Object.values(TASKSTATUS), default: 'PENDING' },
+        status: { type: String, enum: Object.values(TASKSTATUS), default: 'NEW' },
         dueDate: { type: Date },
     },
     {

@@ -14,3 +14,13 @@ exports.getTaskById = async (id) => {
     const task = await Task.findById(id)
     return task;
 }
+
+exports.updateTask = async (id, task) => {
+    const updatedTask = await Task.findByIdAndUpdate(id, task, { new: true });
+    return updatedTask;
+}
+
+exports.deleteTask = async (id) => {
+    const deletedTask = await Task.findByIdAndDelete(id);
+    return deletedTask;
+}

@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { sendError } = require('../middlewares/response.middleware');
+const { sendError } = require('./responses');
 
 const hashPassword = async (password) => {
     try {

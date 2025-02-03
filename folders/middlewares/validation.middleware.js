@@ -1,5 +1,5 @@
 const { body, validationResult } = require("express-validator");
-const { ROLES } = require("../utility/enum");
+const { ROLES, TASKSTATUS } = require("../utility/enum");
 
 const validateUserRegistration = [
   body("name").notEmpty().withMessage("Name is required"),
@@ -15,6 +15,13 @@ const validateUserLogin = [
   handleValidationErrors
 ];
 
+const validateTaskCreation = [
+  body("title").notEmpty().withMessage("Title is required"),
+  body("description").notEmpty().withMessage("Description is required"),
+  body("status").optional().isIn(Object.values(TASKSTATUS)).withMessage("Invalid status"),
+  handleValidationErrors
+];
+
 function handleValidationErrors(req, res, next) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -25,5 +32,6 @@ function handleValidationErrors(req, res, next) {
 
 module.exports = {
   validateUserRegistration,
-  validateUserLogin
+  validateUserLogin,
+  validateTaskCreation
 };

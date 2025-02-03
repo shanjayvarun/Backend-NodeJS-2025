@@ -2,7 +2,7 @@ const userService = require('../services/user.service');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const { hashPassword } = require('../utility/utility');
-const { sendSuccessPost, sendSuccessGet, sendError } = require('../middlewares/response.middleware');
+const { sendSuccessPost, sendSuccessGet, sendError } = require('../utility/responses');
 
 exports.loginUser = (req, res, next) => {
   passport.authenticate('local', { failureRedirect: '/login' }, async (error, user, info) => {
@@ -29,8 +29,8 @@ exports.createUser = async (req, res) => {
     };
   } catch (error) {
     if (error.code == 11000) {
-      return sendError(res, res.status(409), 'Email already exists');
+      return sendError(res, 409, 'Email already exists');
     }
-    return sendError(res, res.status(400), 'Failed to register user. Please check your input');
+    return sendError(res, 400, 'Failed to register user. Please check your input');
   }
 };
