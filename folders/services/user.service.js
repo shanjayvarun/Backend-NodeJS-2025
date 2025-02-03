@@ -10,7 +10,10 @@ exports.getUserById = async (id) => {
 };
 
 exports.findOneByEmail = async (email) => {
-  const user = await User.findOne({ email: email });
-  return user;
+  return await User.findOne({ email: email });
 };
+
+exports.updateUser = async (id, data) => {
+  return await User.findByIdAndUpdate(id, data, { new: true });
+}
 

@@ -32,6 +32,4 @@ passport.deserializeUser(async (id, done) => {
 
 module.exports = passport;
 
-// 1️⃣ Add JWT Middleware to protect routes (/tasks, /profile, etc.).
-// 2️⃣ Implement Refresh Tokens to avoid JWT expiration issues.
-// 3️⃣ Integrate Rate Limiting (Prevent brute-force attacks).
+

@@ -2,7 +2,7 @@ const userService = require('../services/user.service');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const { hashPassword } = require('../utility/utility');
-const { sendSuccessPost, sendSuccessGet, sendError } = require('../utility/responses');
+const { sendSuccessPost, sendSuccessGet, sendError, sendSuccessUpdateOrDelete } = require('../utility/responses');
 
 exports.loginUser = (req, res, next) => {
   passport.authenticate('local', async (error, user, info) => {
@@ -34,3 +34,12 @@ exports.createUser = async (req, res) => {
     return sendError(res, 400, 'Failed to register user. Please check your input');
   }
 };
+
+exports.updateUser = async (req, res) => {
+  try {
+    const task = await userService.updateUser(req.params.id, req.body);
+    return task ? sendSuccessUpdateOrDelete(res, 'User updated successfully') : sendError(res, 404, 'User not found');
+  } catch (error) {
+    return sendError(error, 400, error.message);
+  }
+}

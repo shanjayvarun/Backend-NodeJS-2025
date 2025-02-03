@@ -6,21 +6,17 @@ exports.saveTask = async (task) => {
 }
 
 exports.getTasks = async () => {
-    const tasks = await Task.find();
-    return tasks;
+    return await Task.find();
 }
 
 exports.getTaskById = async (id) => {
-    const task = await Task.findById(id)
-    return task;
+    return await Task.findById(id)
 }
 
 exports.updateTask = async (id, task) => {
-    const updatedTask = await Task.findByIdAndUpdate(id, task, { new: true });
-    return updatedTask;
+    return await Task.findByIdAndUpdate(id, task, { new: true });
 }
 
 exports.deleteTask = async (id) => {
-    const deletedTask = await Task.findByIdAndDelete(id);
-    return deletedTask;
+    return await Task.findByIdAndDelete(id);
 }
