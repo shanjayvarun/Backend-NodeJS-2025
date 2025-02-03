@@ -9,7 +9,7 @@ passport.use(new LocalStrategy({ usernameField: 'email', passwordField: 'passwor
             const user = await userService.findOneByEmail(email);
             if (!user) return done(null, false, { message: 'User not found' });
             const isMatch = await bcrypt.compare(password, user.password);
-            if (!isMatch) return done(null, false, { message: 'Invalid credentials' });
+            if (!isMatch) return done(null, false, { message: "Invalid email or password" });
             return done(null, user);
         } catch (error) {
             return done(error);
@@ -31,3 +31,7 @@ passport.deserializeUser(async (id, done) => {
 });
 
 module.exports = passport;
+
+// 1️⃣ Add JWT Middleware to protect routes (/tasks, /profile, etc.).
+// 2️⃣ Implement Refresh Tokens to avoid JWT expiration issues.
+// 3️⃣ Integrate Rate Limiting (Prevent brute-force attacks).

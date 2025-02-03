@@ -5,15 +5,15 @@ const { hashPassword } = require('../utility/utility');
 const { sendSuccessPost, sendSuccessGet, sendError } = require('../utility/responses');
 
 exports.loginUser = (req, res, next) => {
-  passport.authenticate('local', { failureRedirect: '/login' }, async (error, user, info) => {
+  passport.authenticate('local', async (error, user, info) => {
     if (error) {
-      return sendError(res, { statusCode: 500, details: error.message }, 'Internal server error');
+      return sendError(res, 500, error.message || 'Internal server error');
     }
     if (!user) {
-      return sendError(res, { statusCode: 404, details: info.message }, 'User not found');
+      return sendError(res, 404, info.message);
     }
-    const token = jwt.sign({ id: user._id, role: user.roleType }, process.env.JWT_SECRET, { expiresIn: '24h' });
-    return sendSuccessGet(res, { accessToken: token }, 'User logged in successfully');
+    const token = jwt.sign({ id: user._id, role: user.roleType, email: user.email, name: user.name }, process.env.JWT_SECRET, { expiresIn: '24h' });
+    return sendSuccessGet(res, { token: token }, 'User logged in successfully');
   })(req, res, next);
 };
 

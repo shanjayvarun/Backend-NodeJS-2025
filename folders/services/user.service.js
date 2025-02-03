@@ -9,8 +9,8 @@ exports.getUserById = async (id) => {
   return await User.findById(id);
 };
 
-exports.findOneByEmail = async (data) => {
-  const user = await User.findOne({ email: data });
+exports.findOneByEmail = async (email) => {
+  const user = await User.findOne({ email: email });
   return user;
 };
 
