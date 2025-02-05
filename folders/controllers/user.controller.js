@@ -37,6 +37,7 @@ exports.createUser = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
   try {
+    !req.body.profilePicture ? (req.body.profilePicture = '') : req.body.profilePicture
     const task = await userService.updateUser(req.params.id, req.body);
     return task ? sendSuccessUpdateOrDelete(res, 'User updated successfully') : sendError(res, 404, 'User not found');
   } catch (error) {

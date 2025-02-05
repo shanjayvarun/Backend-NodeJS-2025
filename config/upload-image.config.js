@@ -1,9 +1,8 @@
 const multer = require('multer');
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { S3Client } = require('@aws-sdk/client-s3');
 const multerS3 = require('multer-s3');
-const path = require('path');
+require('dotenv').config();
 
-// Initialize S3 Client
 const s3 = new S3Client({
   region: process.env.AWS_REGION,
   credentials: {
@@ -12,12 +11,13 @@ const s3 = new S3Client({
   }
 });
 
-// Configure Multer with S3
 const upload = multer({
   storage: multerS3({
     s3,
     bucket: process.env.AWS_BUCKET_NAME,
     metadata: (req, file, cb) => {
+      console.log('File:', file);
+      
       cb(null, { fieldName: file.fieldname });
     },
     key: (req, file, cb) => {
