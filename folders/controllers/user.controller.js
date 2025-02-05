@@ -13,6 +13,7 @@ exports.loginUser = (req, res, next) => {
       return sendError(res, 404, info.message);
     }
     const token = jwt.sign({ id: user._id, role: user.roleType, email: user.email, name: user.name }, process.env.JWT_SECRET, { expiresIn: '24h' });
+    await userService.updateUser(user._id, { lastLoginAt: new Date() });
     return sendSuccessGet(res, { token: token }, 'User logged in successfully');
   })(req, res, next);
 };
@@ -37,7 +38,10 @@ exports.createUser = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
   try {
-    !req.body.profilePicture ? (req.body.profilePicture = '') : req.body.profilePicture
+    if (req.body.password) {
+      req.body.password = await hashPassword(req.body.password);
+    }
+    if (!req.body.profilePicture) delete req.body.profilePicture;
     const task = await userService.updateUser(req.params.id, req.body);
     return task ? sendSuccessUpdateOrDelete(res, 'User updated successfully') : sendError(res, 404, 'User not found');
   } catch (error) {

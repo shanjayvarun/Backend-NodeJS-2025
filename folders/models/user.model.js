@@ -19,7 +19,8 @@ const userSchema = new mongoose.Schema(
     socialLinks: {
       linkedin: { type: String, default: '' },
       twitter: { type: String, default: '' }
-    }
+    },
+    lastLoginAt: { type: Date, default: null }
   },
   {
     timestamps: true,
