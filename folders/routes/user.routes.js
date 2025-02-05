@@ -1,12 +1,11 @@
 const express = require('express');
 const userController = require('../controllers/user.controller');
-const { validateUserLogin, validateUserRegistration } = require('../middlewares/validation.middleware');
-const upload = require('../../config/upload-image.config');
+const { validateUserLogin, validateUserRegistration, validateToken} = require('../middlewares/validation.middleware');
 
 const router = express.Router();
 
 router.post("/login", validateUserLogin, userController.loginUser);
 router.post("/sign-up", validateUserRegistration, userController.createUser);
-router.put("/update-user/:id", userController.updateUser);
+router.put("/update-user/:id", validateToken, userController.updateUser);
 
 module.exports = router;

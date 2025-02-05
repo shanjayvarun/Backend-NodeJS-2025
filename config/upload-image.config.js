@@ -16,12 +16,10 @@ const upload = multer({
     s3,
     bucket: process.env.AWS_BUCKET_NAME,
     metadata: (req, file, cb) => {
-      console.log('File:', file);
-      
       cb(null, { fieldName: file.fieldname });
     },
-    key: (req, file, cb) => {
-      const uniqueFileName = `profilePictures/${Date.now()}-${file.originalname}`;
+    key: (req, file, cb) => {      
+      const uniqueFileName = `${req.query.folder}/${Date.now()}-${file.originalname}`;
       cb(null, uniqueFileName);
     }
   }),
@@ -31,8 +29,7 @@ const upload = multer({
       return cb(new Error('Invalid file type. Only JPG, PNG, and JPEG are allowed.'));
     }
     cb(null, true);
-  },
-  limits: { fileSize: 2 * 1024 * 1024 }
+  }
 });
 
 module.exports = upload;
