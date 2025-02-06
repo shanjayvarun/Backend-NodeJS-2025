@@ -9,8 +9,8 @@ const upload = multer({
     metadata: (req, file, cb) => {
       cb(null, { fieldName: file.fieldname });
     },
-    key: (req, file, cb) => {      
-      const uniqueFileName = `${req.query.folder}/${Date.now()}-${file.originalname}`;
+    key: (req, file, cb) => {    
+      const uniqueFileName = `${req.query.folder}/${req.query.id + '.' + file.mimetype.split('/').pop()}`;
       cb(null, uniqueFileName);
     }
   }),
@@ -21,7 +21,7 @@ const upload = multer({
     }
     cb(null, true);
   },
-  limits: { fileSize: 2 * 1024 * 1024 }
+  limits: { fileSize: 5 * 1024 * 1024 }
 });
 
 module.exports = upload;
