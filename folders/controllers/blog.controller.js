@@ -22,7 +22,7 @@ exports.getBlogs = async (req, res) => {
 exports.updateBlog = async (req, res) => {
     try {
         const blog = await blogService.updateBlog(req.params.id, req.body);
-        blog ? sendSuccessUpdateOrDelete(res, blog, 'Blog updated successfully') : sendError(res, 400, 'Failed to update blog');
+        blog ? sendSuccessUpdateOrDelete(res, 'Blog updated successfully') : sendError(res, 400, 'Failed to update blog');
     } catch (error) {
         sendError(res, 500, error.message);
     }
@@ -31,7 +31,7 @@ exports.updateBlog = async (req, res) => {
 exports.deleteBlog = async (req, res) => {
     try {
         const blog = await blogService.deleteBlog(req.params.id);
-        blog ? sendSuccessUpdateOrDelete(res, blog, 'Blog deleted successfully') : sendError(res, 400, 'Failed to delete blog');
+        blog ? sendSuccessUpdateOrDelete(res, 'Blog deleted successfully') : sendError(res, 400, 'Failed to delete blog');
     } catch (error) {
         sendError(res, 500, error.message);
     }
