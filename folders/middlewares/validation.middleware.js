@@ -25,24 +25,31 @@ const validateTaskCreation = [
   handleValidationErrors
 ];
 
+const validateBlogCreation = [
+  body('title').notEmpty().withMessage('Title is required'),
+  body('content').notEmpty().withMessage('Content is required'),
+  body('author').notEmpty().withMessage('Author is required'),
+  handleValidationErrors
+]
+
 const validateToken = (req, res, next) => {
   const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
   if (!token) {
-      return sendError(res, 401, 'No token provided. Unauthorized');
+    return sendError(res, 401, 'No token provided. Unauthorized');
   }
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-      if (err) {
-          return sendError(res, 403, 'Failed to authenticate token');
-      }
-      req.user = decoded;
-      next();
+    if (err) {
+      return sendError(res, 403, 'Failed to authenticate token');
+    }
+    req.user = decoded;
+    next();
   });
 };
 
 function handleValidationErrors(req, res, next) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({ status: false, errors: errors.array() });
+    return sendError(res, 400, 'Request Not Processed Due to Validation Errors', { status: false, errors: errors.array() });
   }
   next();
 }
@@ -51,5 +58,6 @@ module.exports = {
   validateUserRegistration,
   validateUserLogin,
   validateTaskCreation,
+  validateBlogCreation,
   validateToken
 };
