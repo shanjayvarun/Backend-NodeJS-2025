@@ -9,7 +9,10 @@ const upload = multer({
     metadata: (req, file, cb) => {
       cb(null, { fieldName: file.fieldname });
     },
-    key: (req, file, cb) => {    
+    key: (req, file, cb) => {
+      if (!req.query.folder || !req.query.id) {
+        return cb(new Error(!req.query.folder ? 'Missing folder parameter' : 'Missing id parameter'));
+      }
       const uniqueFileName = `${req.query.folder}/${req.query.id + '.' + file.mimetype.split('/').pop()}`;
       cb(null, uniqueFileName);
     }
