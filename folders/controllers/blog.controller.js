@@ -9,3 +9,30 @@ exports.createBlog = async (req, res) => {
         sendError(res, 500, error.message);
     }
 }
+
+exports.getBlogs = async (req, res) => {
+    try {
+        const blogs = req.params.id ? await blogService.getBlogById(req.params.id) : await blogService.getBlogs();
+        return blogs ? sendSuccessGet(res, { [req.params.id ? 'blog' : 'blogs']: blogs, totalCount: blogs.length }, 'Tasks fetched successfully') : sendError(res, 404, 'No tasks found');
+    } catch (error) {
+        return sendError(error, 400, error.message);
+    }
+}
+
+exports.updateBlog = async (req, res) => {
+    try {
+        const blog = await blogService.updateBlog(req.params.id, req.body);
+        blog ? sendSuccessUpdateOrDelete(res, blog, 'Blog updated successfully') : sendError(res, 400, 'Failed to update blog');
+    } catch (error) {
+        sendError(res, 500, error.message);
+    }
+}
+
+exports.deleteBlog = async (req, res) => {
+    try {
+        const blog = await blogService.deleteBlog(req.params.id);
+        blog ? sendSuccessUpdateOrDelete(res, blog, 'Blog deleted successfully') : sendError(res, 400, 'Failed to delete blog');
+    } catch (error) {
+        sendError(res, 500, error.message);
+    }
+}
