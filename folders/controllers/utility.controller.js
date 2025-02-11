@@ -1,9 +1,8 @@
+const upload = require('../../config/upload-file.config');
 const { sendSuccessUpdateOrDelete, sendError } = require('../utility/responses');
 
-exports.uploadFile = async (req, res) => {
-    try {
-        req?.file?.location ? sendSuccessUpdateOrDelete(res, { profilePicture: req.file.location }, 'Image uploaded successfully') : sendError(res, 400, 'Failed to upload image');
-    } catch (error) {
-        sendError(error, 500, 'Failed to upload image');
-    }
+exports.uploadFile = (req, res) => {
+    upload.single('file')(req, res, (error) => {
+        return error ? sendError(res, 400, error.message) : sendSuccessUpdateOrDelete(res, { profilePicture: req.file.location }, 'Image uploaded successfully');
+    });
 };
