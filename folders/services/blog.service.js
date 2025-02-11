@@ -5,8 +5,8 @@ exports.createBlog = async (blog) => {
     return await blogs.save();
 }
 
-exports.getBlogs = async () => {
-    return await Blog.find()
+exports.getBlogs = async (page, limit) => {
+    return await Blog.find().skip(page).limit(limit == -1 ? 0 : limit);
 }
 
 exports.getBlogById = async (id) => {

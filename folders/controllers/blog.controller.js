@@ -6,13 +6,16 @@ exports.createBlog = async (req, res) => {
         const blogs = await blogService.createBlog(req.body);
         blogs ? sendSuccessPost(res, blogs, 'Blog created successfully') : sendError(res, 400, 'Failed to create blog');
     } catch (error) {
+        if (error.code == 11000) {
+            return sendError(res, 409, 'Blog already exists');
+        }
         sendError(res, 500, error.message);
     }
 }
 
 exports.getBlogs = async (req, res) => {
     try {
-        const blogs = req.params.id ? await blogService.getBlogById(req.params.id) : await blogService.getBlogs();
+        const blogs = req.params.id ? await blogService.getBlogById(req.params.id) : await blogService.getBlogs(req.query.page, req.query.limit);
         return blogs ? sendSuccessGet(res, { [req.params.id ? 'blog' : 'blogs']: blogs, totalCount: blogs.length }, 'Tasks fetched successfully') : sendError(res, 404, 'No tasks found');
     } catch (error) {
         return sendError(error, 400, error.message);
