@@ -16,7 +16,7 @@ exports.createBlog = async (req, res) => {
 exports.getBlogs = async (req, res) => {
     try {
         const blogs = req.params.id ? await blogService.getBlogById(req.params.id) : await blogService.getBlogs(req.query.page, req.query.limit);
-        return blogs ? sendSuccessGet(res, { [req.params.id ? 'blog' : 'blogs']: blogs, totalCount: blogs.length }, 'Tasks fetched successfully') : sendError(res, 404, 'No tasks found');
+        return blogs ? sendSuccessGet(res, { [req.params.id ? 'blog' : 'blogs']: blogs, totalCount: blogs.length }, 'Blogs fetched successfully') : sendError(res, 404, 'No blogs found');
     } catch (error) {
         return sendError(error, 400, error.message);
     }
@@ -25,17 +25,21 @@ exports.getBlogs = async (req, res) => {
 exports.updateBlog = async (req, res) => {
     try {
         const blog = await blogService.updateBlog(req.params.id, req.body);
-        blog ? sendSuccessUpdateOrDelete(res, 'Blog updated successfully') : sendError(res, 400, 'Failed to update blog');
+        if (blog) {
+            sendSuccessUpdateOrDelete(res, 'Blog updated successfully')
+        } else {
+            sendError(res, 404, 'No blog found')
+        }
     } catch (error) {
-        sendError(res, 500, error.message);
+        sendError(error, 400, 'Failed to update blog');
     }
 }
 
 exports.deleteBlog = async (req, res) => {
     try {
         const blog = await blogService.deleteBlog(req.params.id);
-        blog ? sendSuccessUpdateOrDelete(res, 'Blog deleted successfully') : sendError(res, 400, 'Failed to delete blog');
+        blog ? sendSuccessUpdateOrDelete(res, 'Blog deleted successfully') :  sendError(res, 404, 'No blog found')
     } catch (error) {
-        sendError(res, 500, error.message);
+        sendError(error, 400, 'Failed to update blog');
     }
 }

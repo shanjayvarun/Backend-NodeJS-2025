@@ -6,6 +6,6 @@ const router = express.Router();
 
 router.post("/login", validateUserLogin, userController.loginUser);
 router.post("/sign-up", validateUserRegistration, userController.createUser);
-router.put("/update-user/:id", validateToken, userController.updateUser);
+router.patch("/update-user/:id", validateToken, userController.updateUser);
 
 module.exports = router;

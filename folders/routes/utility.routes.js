@@ -1,7 +1,6 @@
 const express = require('express');
 const utilityController = require('../controllers/utility.controller');
 const upload = require('../../config/upload-image.config');
-const { validateToken } = require('../middlewares/validation.middleware');
 
 const router = express.Router();
 
