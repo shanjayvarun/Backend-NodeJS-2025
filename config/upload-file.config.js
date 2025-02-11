@@ -10,20 +10,24 @@ const upload = multer({
       cb(null, { fieldName: file.fieldname });
     },
     key: (req, file, cb) => {
-      const FOLDER = ''; const SUBFOLDER = req.query.folder; const FILETYPE = file.mimetype.split('/').pop(); const INPUT = req.query.id
+      const SUBFOLDER = req.query.folder; const FILETYPE = file.mimetype.split('/').pop(); const DATA = req.query.id
       if (!SUBFOLDER || !DATA) {
         return cb(new Error('Validation error: ' + (!req.query.folder ? 'Missing folder parameter' : 'Missing id parameter')));
       }
+      const FOLDER = { pdf: 'FILES', xls: 'FILES', xlsx: 'FILES', png: 'IMAGES', svg: 'IMAGES', jpg: 'IMAGES', jpeg: 'IMAGES' }[FILETYPE] || 'VIDEOS';
       cb(null, `${FOLDER}/${SUBFOLDER}/${DATA + '.' + FILETYPE}`);
     }
   }),
   fileFilter: (req, file, cb) => {
+    const FILETYPE = file.mimetype.split('/').pop();
     if (!ALLOWEDTYPES.includes(FILETYPE)) {
       return cb(new Error(`Unsupported file type: ${FILETYPE}. Only (${ALLOWEDTYPES}) are allowed.`));
     }
     cb(null, true);
   },
-  limits: { fileSize: 1 * 1024 * 1024 }
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
 });
 
 module.exports = upload;
