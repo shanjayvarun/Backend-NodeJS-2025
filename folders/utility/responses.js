@@ -24,6 +24,12 @@ const sendSuccessUpdateOrDelete = (res, message) => {
     });
 };
 
+const sendSuccessNoContent = (res) => {
+    return res.status(204).json({
+        statusCode: 204,
+    });
+}
+
 const sendError = (res, statusCode, message, data) => {
     const STATUSCODE = statusCode >= 400 && statusCode < 600 ? statusCode : 500;
     switch (STATUSCODE) {
@@ -54,4 +60,4 @@ const sendError = (res, statusCode, message, data) => {
     return res.status(STATUSCODE).json(response);
 };
 
-module.exports = { sendSuccessGet, sendSuccessPost, sendSuccessUpdateOrDelete, sendError };
+module.exports = { sendSuccessGet, sendSuccessPost, sendSuccessUpdateOrDelete, sendSuccessNoContent, sendError };

@@ -1,8 +1,7 @@
 const Blog = require('../models/blog.model');
 
 exports.createBlog = async (blog) => {
-    const blogs = new Blog(blog);
-    return await blogs.save();
+    return await new Blog(blog).save();
 }
 
 exports.getBlogs = async (page, limit) => {
@@ -14,7 +13,7 @@ exports.getBlogById = async (id) => {
 }
 
 exports.updateBlog = async (id, blog) => {
-    return await Blog.findByIdAndUpdate(id, blog, { new: true })
+    return await Blog.findByIdAndUpdate(id, { $set: blog }, { new: true, runValidators: true })
 }
 
 exports.deleteBlog = async (id) => {

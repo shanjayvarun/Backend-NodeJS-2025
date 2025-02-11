@@ -1,8 +1,7 @@
 const User = require('../models/user.model');
 
 exports.saveUser = async (data) => {
-  const user = new User(data);
-  return await user.save();
+  return await new User(data).save();
 };
 
 exports.getUserById = async (id) => {
