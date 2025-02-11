@@ -22,4 +22,6 @@ const s3 = new S3Client({
 
 const s3Bucket = process.env.AWS_BUCKET_NAME;
 
-module.exports = { TASKSTATUS, ROLES, s3, s3Bucket };
+const ALLOWEDTYPES = ['jpeg', ' png', ' jpg'];
+
+module.exports = { TASKSTATUS, ROLES, s3, s3Bucket, ALLOWEDTYPES };
