@@ -6,3 +6,9 @@ exports.uploadFile = (req, res) => {
         return error ? sendError(res, 400, error.message) : sendSuccessUpdateOrDelete(res, { profilePicture: req.file.location }, 'Image uploaded successfully');
     });
 };
+
+exports.getFiles = (req, res) => {
+    upload.listObjects((error, data) => {
+        return error ? sendError(res, 400, error.message) : sendSuccessUpdateOrDelete(res, data, 'Files fetched successfully');;
+    });
+}
