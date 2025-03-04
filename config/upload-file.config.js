@@ -1,11 +1,11 @@
 const multer = require('multer');
 const multerS3 = require('multer-s3');
-const { s3, s3Bucket, ALLOWEDTYPES } = require("../folders/utility/enum");
+const { s3, ALLOWEDTYPES, s3params } = require("../folders/utility/enum");
 
 const upload = multer({
   storage: multerS3({
     s3,
-    bucket: s3Bucket,
+    bucket: s3params.Bucket,
     metadata: (req, file, cb) => {
       cb(null, { fieldName: file.fieldname });
     },
@@ -14,7 +14,7 @@ const upload = multer({
       if (!SUBFOLDER || !DATA) {
         return cb(new Error('Validation error: ' + (!req.query.folder ? 'Missing folder parameter' : 'Missing id parameter')));
       }
-      const FOLDER = { pdf: 'FILES', xls: 'FILES', xlsx: 'FILES', png: 'IMAGES', svg: 'IMAGES', jpg: 'IMAGES', jpeg: 'IMAGES' }[FILETYPE] || 'VIDEOS';
+      const FOLDER = { pdf: 'FILES', xls: 'FILES', xlsx: 'FILES', png: 'IMAGES', svg: 'IMAGES', jpg: 'IMAGES', jpeg: 'IMAGES', mp4: 'VIDEOS', mov: 'VIDEOS', mkv: 'VIDEOS', flv: 'VIDEOS' }[FILETYPE] || 'OTHERS';
       cb(null, `${FOLDER}/${SUBFOLDER}/${DATA + '.' + FILETYPE}`);
     }
   }),
