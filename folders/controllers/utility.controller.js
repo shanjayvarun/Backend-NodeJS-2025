@@ -7,7 +7,7 @@ require('dotenv').config();
 
 exports.uploadFile = (req, res) => {
     upload.single('file')(req, res, (error) => {
-        return error ? sendError(res, 400, error.message) : sendSuccessUpdateOrDelete(res, { profilePicture: req.file.location }, 'Image uploaded successfully');
+        return error ? sendError(res, 400, error.message) : sendSuccessUpdateOrDelete(res, { url: req.file.location }, 'Image uploaded successfully');
     });
 };
 
