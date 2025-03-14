@@ -2,6 +2,7 @@ const express = require('express');
 const taskController = require('../controllers/task.controller');
 const { validateTaskCreation, validateToken } = require('../middlewares/validation.middleware');
 const { checkRole } = require('../middlewares/roles.middleware');
+const { ROLES } = require('../utility/enum');
 
 const router = express.Router();
 
