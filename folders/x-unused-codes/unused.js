@@ -13,7 +13,7 @@
 //     if (!isMatch) {
 //       return sendError(res, { statusCode: 401, details: 'Invalid email or password' }, 'Invalid credentials');
 //     }
-//     const token = jwt.sign({ id: user._id, role: user.roleType }, process.env.JWT_SECRET, { expiresIn: '24h' });
+//     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '24h' });
 //     return sendSuccess(res, { accessToken: token }, 'User logged In')
 //   } catch (error) {
 //     return sendError(res, { statusCode: 500, details: error.message }, 'Internal server error');

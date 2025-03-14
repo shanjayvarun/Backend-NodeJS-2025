@@ -8,7 +8,7 @@ const validateUserRegistration = [
   body("name").notEmpty().withMessage("Name is required"),
   body("email").isEmail().withMessage("Invalid email format"),
   body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters"),
-  body("roleType").optional().isIn(Object.values(ROLES)).withMessage("Invalid role type"),
+  body("role").optional().isIn(Object.values(ROLES)).withMessage("Invalid role type"),
   handleValidationErrors
 ];
 
