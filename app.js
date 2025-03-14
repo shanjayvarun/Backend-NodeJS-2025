@@ -5,6 +5,7 @@ const passport = require('passport');
 const userRoutes = require('./folders/routes/user.routes');
 const taskRoutes = require('./folders/routes/task.routes');
 const blogRoutes = require('./folders/routes/blog.routes');
+const productRoutes = require('./folders/routes/product.routes')
 const utilityRoutes = require('./folders/routes/utility.routes');
 require('./config/passport.config');
 
@@ -18,6 +19,7 @@ app.use(passport.initialize());
 app.use(`/${process.env.SUBDOMAIN}/${process.env.VERSION}/users`, userRoutes);
 app.use(`/${process.env.SUBDOMAIN}/${process.env.VERSION}/tasks`, taskRoutes);
 app.use(`/${process.env.SUBDOMAIN}/${process.env.VERSION}/blogs`, blogRoutes);
+app.use(`/${process.env.SUBDOMAIN}/${process.env.VERSION}/products`, productRoutes);
 app.use(`/${process.env.SUBDOMAIN}/${process.env.VERSION}/utility`, utilityRoutes);
 //App routes <-- END -->
 
