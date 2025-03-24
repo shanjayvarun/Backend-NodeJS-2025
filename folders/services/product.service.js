@@ -11,3 +11,7 @@ exports.getProductById = async (id) => {
 exports.getProducts = async (page, limit) => {
     return await Product.find().skip(page).limit(limit == -1 ? 0 : limit)
 }
+
+exports.updateProduct = async (id, body) => {
+    return await Product.findByIdAndUpdate(id, { $set: body }, { new: true, runValidators: false } )
+}

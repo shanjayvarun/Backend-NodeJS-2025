@@ -1,12 +1,16 @@
 const express = require('express');
-const { validateToken } = require('../middlewares/validation.middleware');
+const { validateUserToken, validateProductCreation } = require('../middlewares/validation.middleware');
 const productControlller = require('../controllers/product.controller')
 
 const router = express.Router();
 
-router.post("/add-product", validateToken, productControlller.addProduct);
-router.get("/get-products", validateToken, productControlller.getProducts);
-// router.patch("/update-product/:id", validateToken, productControlller);
-// router.delete("/delete-product/:id", validateToken, productControlller);
+router.post("/add-product", validateUserToken, validateProductCreation, productControlller.addProduct);
+router.get("/get-products", validateUserToken, productControlller.getProducts);
+router.get("/get-products/:id", validateUserToken, productControlller.getProducts);
+router.patch("/update-product/:id", validateUserToken, productControlller.updateProduct);
+router.delete("/delete-product/:id", validateUserToken);
+router.patch("/like-product", validateUserToken);
+router.patch("/review-product", validateUserToken)
+router.patch("/add-to-cart", validateUserToken)
 
 module.exports = router;

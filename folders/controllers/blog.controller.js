@@ -9,7 +9,7 @@ exports.createBlog = async (req, res) => {
         if (error.code == 11000) {
             return sendError(res, 409, 'Blog already exists');
         }
-        sendError(error, 500, error.message);
+        return sendError(error, 500, error.message);
     }
 }
 
@@ -27,7 +27,7 @@ exports.updateBlog = async (req, res) => {
         const blog = await blogService.updateBlog(req.params.id, req.body);
         blog ? sendSuccessUpdateOrDelete(res, 'Blog updated successfully') : sendError(res, 404, 'No blog found')
     } catch (error) {
-        sendError(error, 500, error.message);
+        return sendError(error, 500, error.message);
     }
 }
 
@@ -36,7 +36,7 @@ exports.deleteBlog = async (req, res) => {
         const blog = await blogService.deleteBlog(req.params.id);
         blog ? sendSuccessUpdateOrDelete(res, 'Blog deleted successfully') : sendError(res, 404, 'No blog found')
     } catch (error) {
-        sendError(error, 500, error.message);
+        return sendError(error, 500, error.message);
     }
 }
 

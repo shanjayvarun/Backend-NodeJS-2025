@@ -39,7 +39,7 @@ exports.createUser = async (req, res) => {
     if (error.code == 11000) {
       return sendError(res, 409, 'Email already exists');
     }
-    return sendError(res, 400, 'Failed to register user. Please check your input');
+    return sendError(error, 500, error.message);
   }
 };
 
@@ -52,6 +52,6 @@ exports.updateUser = async (req, res) => {
     const task = await userService.updateUser(req.params.id, req.body);
     return task ? sendSuccessUpdateOrDelete(res, 'User updated successfully') : sendError(res, 404, 'User not found');
   } catch (error) {
-    return sendError(error, 400, error.message);
+    return sendError(error, 500, error.message);
   }
 }

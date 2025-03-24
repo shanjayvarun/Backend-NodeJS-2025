@@ -20,7 +20,7 @@ exports.getFiles = async (req, res) => {
         const s3ObjectList = data.Contents.map(file => ({ Key: file.Key, Size: file.Size, LastModified: file.LastModified }));
         return sendSuccessGet(res, { s3ObjectList, totalCount: data.Contents.length }, 'Files fetched successfully');
     } catch (error) {
-        sendError(res, 400, error.message);
+        return sendError(error, 500, error.message);
     }
 }
 
@@ -34,6 +34,6 @@ exports.downloadFile = async (req, res) => {
         const url = await getSignedUrl(s3, command, { expiresIn: 10 }); // current expire time is 10 seconds
         return sendSuccessGet(res, { url }, 'File download link generated successfully');
     } catch (error) {
-        return sendError(res, 404, 'File not found');
+        return sendError(error, 500, error.message);
     }
 };

@@ -30,9 +30,16 @@ const validateBlogCreation = [
   body('content').notEmpty().withMessage('Content is required'),
   body('author').notEmpty().withMessage('Author is required'),
   handleValidationErrors
+];
+
+const validateProductCreation = [
+  body('productName').notEmpty().withMessage('Product name is required'),
+  body('price').notEmpty().withMessage('Price is required'),
+  body('category').notEmpty().withMessage('Category is required'),
+  handleValidationErrors
 ]
 
-const validateToken = (req, res, next) => {
+const validateUserToken = (req, res, next) => {
   const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
   if (!token) {
     return sendError(res, 401, 'No token provided. Unauthorized');
@@ -49,7 +56,7 @@ const validateToken = (req, res, next) => {
 function handleValidationErrors(req, res, next) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return sendError(res, 400, 'Request Not Processed Due to Validation Errors', { status: false, errors: errors.array() });
+    return sendError(res, 400, 'Request Not Processed Due to Input Validation Errors', { status: false, errors: errors.array() });
   }
   next();
 }
@@ -59,5 +66,6 @@ module.exports = {
   validateUserLogin,
   validateTaskCreation,
   validateBlogCreation,
-  validateToken
+  validateProductCreation,
+  validateUserToken
 };

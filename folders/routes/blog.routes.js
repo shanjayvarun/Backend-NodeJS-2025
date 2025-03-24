@@ -1,16 +1,16 @@
 const express = require('express');
 const blogController = require('../controllers/blog.controller');
-const { validateToken, validateBlogCreation } = require('../middlewares/validation.middleware');
+const { validateUserToken, validateBlogCreation } = require('../middlewares/validation.middleware');
 
 const router = express.Router();
 
-router.post("/create-blog", validateBlogCreation, validateToken, blogController.createBlog);
-router.get("/get-blogs", validateToken, blogController.getBlogs);
-router.get("/get-blog/:id", validateToken, blogController.getBlogs);
-router.patch("/update-blog/:id", validateToken, blogController.updateBlog);
-router.delete("/delete-blog/:id", validateToken, blogController.deleteBlog);
-router.patch("/like-blog/:id", validateToken, blogController.likeBlog);
-router.patch("/comment-blog/:id", validateToken, blogController.commentBlog);
-router.get("/get-blog-likes-comments/:id", validateToken, blogController.likesAndCommmentsCountById);
+router.post("/create-blog", validateBlogCreation, validateUserToken, blogController.createBlog);
+router.get("/get-blogs", validateUserToken, blogController.getBlogs);
+router.get("/get-blog/:id", validateUserToken, blogController.getBlogs);
+router.patch("/update-blog/:id", validateUserToken, blogController.updateBlog);
+router.delete("/delete-blog/:id", validateUserToken, blogController.deleteBlog);
+router.patch("/like-blog/:id", validateUserToken, blogController.likeBlog);
+router.patch("/comment-blog/:id", validateUserToken, blogController.commentBlog);
+router.get("/get-blog-likes-comments/:id", validateUserToken, blogController.likesAndCommmentsCountById);
 
 module.exports = router;
