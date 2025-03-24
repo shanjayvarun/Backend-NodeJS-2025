@@ -9,7 +9,7 @@ exports.getProductById = async (id) => {
 }
 
 exports.getProducts = async (page, limit) => {
-    return await Product.find().skip(page).limit(limit == -1 ? 0 : limit);
+    return await Product.find().skip(page).limit(limit == -1 ? 0 : limit).populate('reviews.user', 'name email');
 }
 
 exports.updateProduct = async (id, body) => {

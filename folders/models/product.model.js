@@ -26,4 +26,10 @@ const productSchema = new mongoose.Schema(
         versionKey: false
     });
 
+productSchema.virtual('likesCount').get(function () { return this.likes.length });
+productSchema.virtual('reviewsCount').get(function () { return this.reviews.length });
+
+productSchema.set('toJSON', { virtuals: true });
+productSchema.set('toObject', { virtuals: true });
+
 module.exports = mongoose.model('Product', productSchema);
