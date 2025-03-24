@@ -5,11 +5,11 @@ exports.addProduct = async (product) => {
 }
 
 exports.getProductById = async (id) => {
-    return await Product.findById(id).populate('reviews.user', 'name email')
+    return await Product.findById(id).populate('reviews.user', 'name email');
 }
 
 exports.getProducts = async (page, limit) => {
-    return await Product.find().skip(page).limit(limit == -1 ? 0 : limit)
+    return await Product.find().skip(page).limit(limit == -1 ? 0 : limit);
 }
 
 exports.updateProduct = async (id, body) => {
