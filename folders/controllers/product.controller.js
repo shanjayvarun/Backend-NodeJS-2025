@@ -50,14 +50,14 @@ exports.likeProduct = async (req, res) => {
     }
 }
 
-// exports.reviewProduct = async (req, res) => {
-//     try {
-//         const product = await productService.getProductById(req.params.id)
-//         if (!product) return sendError(res, 404, 'No products found')
-//         product.reviews.push({ user: req.user._id, comment: req.body.comment, rating: req.body.rating })
-//         await product.save()
-//         return sendSuccessNoContent(res)
-//     } catch (error) {
-//         return sendError(error, 500, error.message);
-//     }
-// }
+exports.reviewProduct = async (req, res) => {
+    try {
+        const product = await productService.getProductById(req.params.id)
+        if (!product) return sendError(res, 404, 'No products found')
+        product.reviews.push({ user: req.user.id, comment: req.body.comment, rating: req.body.rating })
+        await product.save()
+        return sendSuccessNoContent(res)
+    } catch (error) {
+        return sendError(error, 500, error.message);
+    }
+}

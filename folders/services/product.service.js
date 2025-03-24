@@ -5,7 +5,7 @@ exports.addProduct = async (product) => {
 }
 
 exports.getProductById = async (id) => {
-    return await Product.findById(id)
+    return await Product.findById(id).populate('reviews.user', 'name email')
 }
 
 exports.getProducts = async (page, limit) => {
