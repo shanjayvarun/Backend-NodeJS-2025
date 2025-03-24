@@ -13,5 +13,9 @@ exports.getProducts = async (page, limit) => {
 }
 
 exports.updateProduct = async (id, body) => {
-    return await Product.findByIdAndUpdate(id, { $set: body }, { new: true, runValidators: false } )
+    return await Product.findByIdAndUpdate(id, { $set: body }, { new: true, runValidators: false })
+}
+
+exports.deleteProduct = async (id) => {
+    return await Product.findByIdAndDelete(id)
 }

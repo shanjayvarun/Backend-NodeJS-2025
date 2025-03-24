@@ -27,3 +27,37 @@ exports.updateProduct = async (req, res) => {
         return sendError(error, 500, error.message);
     }
 }
+
+exports.deleteProduct = async (req, res) => {
+    try {
+        const product = await productService.deleteProduct(req.params.id)
+        return product ? sendSuccessUpdateOrDelete(res, "Product deleted successfully") : sendError(res, 404, 'No products found')
+    } catch (error) {
+        return sendError(error, 500, error.message);
+    }
+}
+
+exports.likeProduct = async (req, res) => {
+    try {
+        const product = await productService.getProductById(req.params.id)
+        if (!product) return sendError(res, 404, 'No products found')
+        const isLiked = product.likes.includes(req.user.id)
+        isLiked ? product.likes.pull(req.user.id) : product.likes.push(req.user.id)
+        await product.save()
+        return sendSuccessNoContent(res)
+    } catch (error) {
+        return sendError(error, 500, error.message);
+    }
+}
+
+// exports.reviewProduct = async (req, res) => {
+//     try {
+//         const product = await productService.getProductById(req.params.id)
+//         if (!product) return sendError(res, 404, 'No products found')
+//         product.reviews.push({ user: req.user._id, comment: req.body.comment, rating: req.body.rating })
+//         await product.save()
+//         return sendSuccessNoContent(res)
+//     } catch (error) {
+//         return sendError(error, 500, error.message);
+//     }
+// }

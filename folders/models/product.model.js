@@ -11,6 +11,7 @@ const productSchema = new mongoose.Schema(
         quantity: { type: Number, default: 0 },
         discount: { type: Number, default: 0 },
         ratings: { type: Number, default: 0 },
+        likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
         reviews: [
             {
                 user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

@@ -8,9 +8,9 @@ router.post("/add-product", validateUserToken, validateProductCreation, productC
 router.get("/get-products", validateUserToken, productControlller.getProducts);
 router.get("/get-products/:id", validateUserToken, productControlller.getProducts);
 router.patch("/update-product/:id", validateUserToken, productControlller.updateProduct);
-router.delete("/delete-product/:id", validateUserToken);
-router.patch("/like-product", validateUserToken);
-router.patch("/review-product", validateUserToken)
+router.delete("/delete-product/:id", validateUserToken, productControlller.deleteProduct);
+router.patch("/like-product/:id", validateUserToken, productControlller.likeProduct);
+// router.patch("/review-product/:id", validateUserToken, productControlller.reviewProduct)
 router.patch("/add-to-cart", validateUserToken)
 
 module.exports = router;
