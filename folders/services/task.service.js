@@ -4,8 +4,8 @@ exports.saveTask = async (task) => {
     return await new Task(task).save();
 }
 
-exports.getTasks = async (page, limit) => {
-    return await Task.find().skip(page).limit(limit == -1 ? 0 : limit);
+exports.getTasks = async (skip, limit) => {
+    return await Task.find().skip(skip).limit(limit == -1 ? 0 : limit);
 }
 
 exports.getTaskById = async (id) => {

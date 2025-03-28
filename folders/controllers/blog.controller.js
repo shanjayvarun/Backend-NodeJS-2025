@@ -15,7 +15,7 @@ exports.createBlog = async (req, res) => {
 
 exports.getBlogs = async (req, res) => {
     try {
-        const blogs = req.params.id ? await blogService.getBlogById(req.params.id) : await blogService.getBlogs(req.query.page, req.query.limit);
+        const blogs = req.params.id ? await blogService.getBlogById(req.params.id) : await blogService.getBlogs(req.query.skip, req.query.limit);
         return blogs ? sendSuccessGet(res, { [req.params.id ? 'blog' : 'blogs']: blogs, totalCount: blogs.length }, 'Blogs fetched successfully') : sendError(res, 404, 'No blogs found');
     } catch (error) {
         return sendError(error, 500, error.message);
