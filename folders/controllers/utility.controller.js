@@ -4,6 +4,7 @@ const { s3, s3params, listS3Files } = require("../utility/s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { GetObjectCommand } = require('@aws-sdk/client-s3');
 require('dotenv').config();
+const weatherService = require('../services/weather.service');
 
 exports.uploadFile = (req, res) => {
     upload.single('file')(req, res, (error) => {
@@ -31,9 +32,33 @@ exports.downloadFile = async (req, res) => {
         if (!data.Contents[0].Key) return sendError(res, 404, 'File not found');
         s3params.Key = data.Contents[0].Key
         const command = new GetObjectCommand(s3params);
-        const url = await getSignedUrl(s3, command, { expiresIn: 10 }); // current expire time is 10 seconds
+        const url = await getSignedUrl(s3, command, { expiresIn: 10 }); // expire time is in seconds
         return sendSuccessGet(res, { url }, 'File download link generated successfully');
     } catch (error) {
         return sendError(error, 500, error.message);
+    }
+};
+
+exports.weatherDetails = async (req, res) => {
+    try {
+        const { data: cityData } = await weatherService.geoCoordinates(req.query.city)
+        if (!cityData.length) return sendError(res, 404, "Weather details for this city were not found");
+        const { lat, lon, name, country, state } = cityData[0];
+        const { data: weather } = await weatherService.currentWeather(lat, lon)
+        const response = {
+            name,
+            country,
+            state,
+            lat,
+            lon,
+            temperature: `${weather.main.temp}°C`,
+            humidity: `${weather.main.humidity}%`,
+            condition: weather.weather[0].description,
+            wind_speed: `${weather.wind.speed} m/s`
+        };
+        return sendSuccessGet(res, response, "Weather details fetched successfully");
+    } catch (error) {
+        console.error("Weather API Error:", error.message);
+        sendError(res, 500, "Failed to fetch weather data");
     }
 };

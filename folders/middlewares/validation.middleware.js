@@ -1,4 +1,4 @@
-const { body, validationResult } = require("express-validator");
+const { body, query, validationResult } = require("express-validator");
 const { ROLES, TASKSTATUS } = require("../utility/enum");
 const jwt = require('jsonwebtoken');
 const { sendError } = require('../utility/responses');
@@ -39,6 +39,11 @@ const validateProductCreation = [
   handleValidationErrors
 ]
 
+const validateCity = [
+  query('city').notEmpty().withMessage('City is required'),
+  handleValidationErrors
+]
+
 const validateUserToken = (req, res, next) => {
   const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
   if (!token) {
@@ -67,5 +72,6 @@ module.exports = {
   validateTaskCreation,
   validateBlogCreation,
   validateProductCreation,
+  validateCity,
   validateUserToken
 };
