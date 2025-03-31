@@ -3,4 +3,5 @@
 // 3️⃣ Improve Logging (Use Winston or Morgan for error logs)
 // 2️⃣ Add Email Verification (Send confirmation emails)?
 // 3️⃣ Create a Forgot Password API?
+// Add to card APi Creation in Product management
 // token blacklisting
