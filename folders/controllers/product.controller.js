@@ -13,16 +13,19 @@ exports.addProduct = async (req, res) => {
 exports.getProducts = async (req, res) => {
     try {
         let { category, search, sort, inStock, order, skip, limit } = req.query;
+        skip = parseInt(skip) || 0;
+        limit = parseInt(limit) || 10;
         let filter = {};
         let sortQuery = {};
         if (category) { filter.category = category }
         if (inStock) { filter.inStock = inStock }
         if (search) { filter.productName = { $regex: search, $options: "i" } }
         if (sort) { let sortOrder = order === "desc" ? -1 : 1; sortQuery[sort] = sortOrder; }
+        console.log(sortQuery);
         const products = req.params.id ? await productService.getProductById(req.params.id) : await productService.getProducts(filter, sortQuery, skip, limit);
         return products ? sendSuccessGet(res, { [req.params.id ? "product" : "products"]: products, totalCount: products.length }, "Products fetched successfully") : sendError(res, 404, "No Products found");
     } catch (error) {
-        return sendError(res, 500, error.message);
+        return sendError(error, 500, error.message);
     }
 };
 

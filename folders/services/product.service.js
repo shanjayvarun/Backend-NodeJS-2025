@@ -9,7 +9,9 @@ exports.getProductById = async (id) => {
 }
 
 exports.getProducts = async (filter, sort, skip, limit) => {
-    return await Product.find(filter).sort(sort).skip(skip).limit(limit == -1 ? 0 : limit).populate('reviews.user', 'name email');
+    let sort_ = Object.keys(sort).length === 0 ? { createdAt: -1 } : sort;
+    let limit_ = limit == -1 ? 0 : limit;
+    return await Product.find(filter).sort(sort_).skip(skip).limit(limit_).populate('reviews.user', 'name email');
 }
 
 exports.updateProduct = async (id, body) => {

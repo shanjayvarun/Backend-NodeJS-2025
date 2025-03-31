@@ -19,8 +19,8 @@ app.use(passport.initialize());
 app.use(`/${process.env.SUBDOMAIN}/${process.env.VERSION}/users`, userRoutes);
 app.use(`/${process.env.SUBDOMAIN}/${process.env.VERSION}/tasks`, taskRoutes);
 app.use(`/${process.env.SUBDOMAIN}/${process.env.VERSION}/blogs`, blogRoutes);
-app.use(`/${process.env.SUBDOMAIN}/${process.env.VERSION}/products`, productRoutes);
 app.use(`/${process.env.SUBDOMAIN}/${process.env.VERSION}/utility`, utilityRoutes);
+app.use(`/${process.env.SUBDOMAIN}/${process.env.VERSION}/products`, productRoutes);
 //App routes <-- END -->
 
 module.exports = app;
