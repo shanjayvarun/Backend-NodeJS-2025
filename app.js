@@ -8,6 +8,7 @@ const taskRoutes = require('./folders/routes/task.routes');
 const blogRoutes = require('./folders/routes/blog.routes');
 const productRoutes = require('./folders/routes/product.routes')
 const utilityRoutes = require('./folders/routes/utility.routes');
+const requestLogger = require('./folders/middlewares/requestLogger');
 require('./config/passport.config');
 
 dotenv.config();
@@ -16,6 +17,7 @@ const app = express();
 app.use(express.json());
 app.use(passport.initialize());
 app.use(cors())
+app.use(requestLogger);
 
 //App routes <-- START -->
 app.use(`/${process.env.SUBDOMAIN}/${process.env.VERSION}/users`, userRoutes);

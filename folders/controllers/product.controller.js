@@ -21,7 +21,6 @@ exports.getProducts = async (req, res) => {
         if (inStock) { filter.inStock = inStock }
         if (search) { filter.productName = { $regex: search, $options: "i" } }
         if (sort) { let sortOrder = order === "desc" ? -1 : 1; sortQuery[sort] = sortOrder; }
-        console.log(sortQuery);
         const products = req.params.id ? await productService.getProductById(req.params.id) : await productService.getProducts(filter, sortQuery, skip, limit);
         return products ? sendSuccessGet(res, { [req.params.id ? "product" : "products"]: products, totalCount: products.length }, "Products fetched successfully") : sendError(res, 404, "No Products found");
     } catch (error) {
