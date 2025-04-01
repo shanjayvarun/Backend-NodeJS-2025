@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db.config');
 const passport = require('passport');
+const cors = require("cors");
 const userRoutes = require('./folders/routes/user.routes');
 const taskRoutes = require('./folders/routes/task.routes');
 const blogRoutes = require('./folders/routes/blog.routes');
@@ -14,6 +15,7 @@ connectDB();
 const app = express();
 app.use(express.json());
 app.use(passport.initialize());
+app.use(cors())
 
 //App routes <-- START -->
 app.use(`/${process.env.SUBDOMAIN}/${process.env.VERSION}/users`, userRoutes);

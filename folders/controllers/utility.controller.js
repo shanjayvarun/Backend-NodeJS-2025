@@ -58,7 +58,7 @@ exports.weatherDetails = async (req, res) => {
         };
         return sendSuccessGet(res, response, "Weather details fetched successfully");
     } catch (error) {
-        console.error("Weather API Error:", error.message);
-        sendError(res, 500, "Failed to fetch weather data");
+        console.error(error.message);
+        sendError(res, 500, "Weather API is currently unavailable. Please try again later.");
     }
 };
