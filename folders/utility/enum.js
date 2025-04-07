@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const TASKSTATUS = {
     NEW: 'NEW',
     PENDING: 'PENDING',
@@ -25,4 +27,6 @@ const S3FOLDERMAP = {
 
 const ALLOWEDTYPES = ['jpeg', 'png', 'jpg', 'svg', 'csv', 'xls', 'xlsx', 'pdf', 'mp4', 'mov', 'mkv', 'flv'];
 
-module.exports = { TASKSTATUS, ROLES, ALLOWEDTYPES, S3FOLDERMAP };
+const ROUTE_PREFIX = `/${process.env.SUBDOMAIN}/${process.env.VERSION}`;
+
+module.exports = { TASKSTATUS, ROLES, ALLOWEDTYPES, S3FOLDERMAP, ROUTE_PREFIX };

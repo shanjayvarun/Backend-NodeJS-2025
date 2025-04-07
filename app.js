@@ -26,7 +26,7 @@ app.use(`/${process.env.SUBDOMAIN}/${process.env.VERSION}/tasks`, taskRoutes);
 app.use(`/${process.env.SUBDOMAIN}/${process.env.VERSION}/blogs`, blogRoutes);
 app.use(`/${process.env.SUBDOMAIN}/${process.env.VERSION}/utility`, utilityRoutes);
 app.use(`/${process.env.SUBDOMAIN}/${process.env.VERSION}/products`, productRoutes);
-app.use(`/${process.env.SUBDOMAIN}/${process.env.VERSION}/chats`, chatRoutes);
+// app.use(`/${process.env.SUBDOMAIN}/${process.env.VERSION}/chats`, chatRoutes);
 //App routes <-- END -->
 
 module.exports = app;
