@@ -27,6 +27,8 @@ const S3FOLDERMAP = {
 
 const ALLOWEDTYPES = ['jpeg', 'png', 'jpg', 'svg', 'csv', 'xls', 'xlsx', 'pdf', 'mp4', 'mov', 'mkv', 'flv'];
 
+const NOTIFICATION_TYPES = ["comment", "like", "mention", "system"]
+
 const ROUTE_PREFIX = `/${process.env.SUBDOMAIN}/${process.env.VERSION}`;
 
-module.exports = { TASKSTATUS, ROLES, ALLOWEDTYPES, S3FOLDERMAP, ROUTE_PREFIX };
+module.exports = { TASKSTATUS, ROLES, ALLOWEDTYPES, S3FOLDERMAP, ROUTE_PREFIX, NOTIFICATION_TYPES };

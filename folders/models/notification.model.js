@@ -1,9 +1,10 @@
 const mongoose = require("mongoose");
+const { NOTIFICATION_TYPES } = require("../utility/enum");
 
 const notificationSchema = new mongoose.Schema(
     {
         user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-        type: { type: String, enum: ["comment", "like", "mention", "system"], required: true },
+        type: { type: String, enum: NOTIFICATION_TYPES, required: true },
         message: { type: String, required: true },
         link: { type: String },
         isRead: { type: Boolean, default: false }
