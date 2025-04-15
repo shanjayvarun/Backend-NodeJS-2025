@@ -5,7 +5,7 @@ exports.createNotification = async (data) => {
 }
 
 exports.getNotificationsByUserId = async (userId) => {
-    return await Notification.find({ user: userId }).sort({ createdAt: -1 })
+    return await Notification.find({ user: userId }).sort({ createdAt: -1 }).lean()
 }
 
 exports.markAsReadById = async (id) => {
