@@ -32,7 +32,7 @@ exports.downloadFile = async (req, res) => {
         if (!data.Contents[0].Key) return sendError(res, 404, 'File not found');
         s3params.Key = data.Contents[0].Key
         const command = new GetObjectCommand(s3params);
-        const url = await getSignedUrl(s3, command, { expiresIn: 10 }); // expire time is in seconds
+        const url = await getSignedUrl(s3, command, { expiresIn: 604800 }); // expire time is in 7 Days Now
         return sendSuccessGet(res, { url }, 'File download link generated successfully');
     } catch (error) {
         return sendError(error, 500, error.message);
