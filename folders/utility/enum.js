@@ -1,11 +1,5 @@
 require('dotenv').config();
 
-const TASKSTATUS = {
-    NEW: 'NEW',
-    PENDING: 'PENDING',
-    COMPLETED: 'COMPLETED'
-}
-
 const ROLES = {
     ADMIN: "ADMIN",
     USER: "USER",
@@ -31,4 +25,4 @@ const NOTIFICATION_TYPES = ["comment", "like", "mention", "system"]
 
 const ROUTE_PREFIX = `/${process.env.SUBDOMAIN}/${process.env.VERSION}`;
 
-module.exports = { TASKSTATUS, ROLES, ALLOWEDTYPES, S3FOLDERMAP, ROUTE_PREFIX, NOTIFICATION_TYPES };
+module.exports = { ROLES, ALLOWEDTYPES, S3FOLDERMAP, ROUTE_PREFIX, NOTIFICATION_TYPES };

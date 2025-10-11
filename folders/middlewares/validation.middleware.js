@@ -1,5 +1,5 @@
-const { body, query, validationResult } = require("express-validator");
-const { ROLES, TASKSTATUS } = require("../utility/enum");
+const { body, validationResult } = require("express-validator");
+const { ROLES } = require("../utility/enum");
 const jwt = require('jsonwebtoken');
 const { sendError } = require('../utility/responses');
 require('dotenv').config();
@@ -17,32 +17,6 @@ const validateUserLogin = [
   body("password").notEmpty().withMessage("Password is required"),
   handleValidationErrors
 ];
-
-const validateTaskCreation = [
-  body("title").notEmpty().withMessage("Title is required"),
-  body("description").notEmpty().withMessage("Description is required"),
-  body("status").optional().isIn(Object.values(TASKSTATUS)).withMessage("Invalid status"),
-  handleValidationErrors
-];
-
-const validateBlogCreation = [
-  body('title').notEmpty().withMessage('Title is required'),
-  body('content').notEmpty().withMessage('Content is required'),
-  body('author').notEmpty().withMessage('Author is required'),
-  handleValidationErrors
-];
-
-const validateProductCreation = [
-  body('productName').notEmpty().withMessage('Product name is required'),
-  body('price').notEmpty().withMessage('Price is required'),
-  body('category').notEmpty().withMessage('Category is required'),
-  handleValidationErrors
-]
-
-const validateCity = [
-  query('city').notEmpty().withMessage('City is required'),
-  handleValidationErrors
-]
 
 const validateUserToken = (req, res, next) => {
   const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
@@ -69,9 +43,5 @@ function handleValidationErrors(req, res, next) {
 module.exports = {
   validateUserRegistration,
   validateUserLogin,
-  validateTaskCreation,
-  validateBlogCreation,
-  validateProductCreation,
-  validateCity,
   validateUserToken
 };

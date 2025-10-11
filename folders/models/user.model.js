@@ -6,21 +6,11 @@ const userSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: { type: String, default: "USER" },
-    profilePicture: { type: String },
+    profilePicture: { type: String, default: '' },
     phone: { type: String, default: null },
     bio: { type: String, default: '' },
-    address: {
-      street: { type: String, default: '' },
-      city: { type: String, default: '' },
-      country: { type: String, default: '' },
-      zipCode: { type: String, default: '' }
-    },
     isVerified: { type: Boolean, default: false },
-    socialLinks: {
-      linkedin: { type: String, default: '' },
-      twitter: { type: String, default: '' }
-    },
-    lastLoginAt: { type: Date, default: null }
+    lastLoginAt: { type: Date, default: Date.now() }
   },
   {
     timestamps: true,
