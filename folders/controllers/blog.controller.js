@@ -11,7 +11,7 @@ exports.createBlog = async (req, res) => {
         }
         return sendError(error, 500, error.message);
     }
-}
+}       
 
 exports.getBlogs = async (req, res) => {
     try {
