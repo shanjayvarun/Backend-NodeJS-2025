@@ -12,14 +12,16 @@ exports.loginUser = (req, res, next) => {
     if (!user) {
       return sendError(res, 404, info.message);
     }
-    const token = jwt.sign({ id: user._id, role: user.role, email: user.email, name: user.name }, process.env.JWT_SECRET, { expiresIn: '24h', algorithm: 'HS256' });
+    const token = jwt.sign({ id: user._id, role: user.role, email: user.email, name: user.name }, process.env.JWT_ACCESS_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN, algorithm: process.env.JWT_ALGO });
     await userService.updateUser(user._id, { lastLoginAt: new Date() });
     return sendSuccessGet(res, {
       token,
+      expiresIn: 86400,
       user: {
         id: user._id,
         name: user.name,
-        role: user.role
+        role: user.role,
+        lastLoginAt: user.lastLoginAt
       }
     }, 'User logged in successfully');
   })(req, res, next);

@@ -23,7 +23,7 @@ const validateUserToken = (req, res, next) => {
   if (!token) {
     return sendError(res, 401, 'No token provided. Unauthorized');
   }
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+  jwt.verify(token, process.env.JWT_ACCESS_SECRET, (err, decoded) => {
     if (err) {
       return sendError(res, 403, 'Failed to authenticate token');
     }

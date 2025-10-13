@@ -13,7 +13,7 @@
 //     if (!isMatch) {
 //       return sendError(res, { statusCode: 401, details: 'Invalid email or password' }, 'Invalid credentials');
 //     }
-//     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '24h' });
+//     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_ACCESS_SECRET, { expiresIn: '24h' });
 //     return sendSuccess(res, { accessToken: token }, 'User logged In')
 //   } catch (error) {
 //     return sendError(res, { statusCode: 500, details: error.message }, 'Internal server error');
@@ -26,7 +26,7 @@
 
 // Set up session for passport
 // app.use(session({
-//     secret: process.env.JWT_SECRET,
+//     secret: process.env.JWT_ACCESS_SECRET,
 //     resave: false,
 //     saveUninitialized: true
 // }));
@@ -42,5 +42,5 @@
 
 // app.use(passport.session());
 
-//Code to create a JWT_SECRET
+//Code to create a JWT_ACCESS_SECRET
 //const secretKey = crypto.randomBytes(64).toString('hex');

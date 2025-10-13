@@ -1,13 +1,11 @@
 const express = require('express');
 const userController = require('../controllers/user.controller');
-const { validateUserLogin, validateUserRegistration, validateUserToken} = require('../middlewares/validation.middleware');
-const { checkRole } = require('../middlewares/roles.middleware');
-const { ROLES } = require('../utility/enum');
+const { validateUserLogin, validateUserRegistration } = require('../middlewares/validation.middleware');
+const { loginLimiter, registerLimiter } = require('../../config/api-rate-limit');
 
 const router = express.Router();
 
-router.post("/login", validateUserLogin, userController.loginUser);
-router.post("/sign-up", validateUserRegistration, userController.createUser);
-router.patch("/update-user/:id", validateUserToken, checkRole([ROLES.ADMIN]), userController.updateUser);
+router.post("/login", loginLimiter, validateUserLogin, userController.loginUser);
+router.post("/sign-up", registerLimiter, validateUserRegistration, userController.createUser);
 
 module.exports = router;
