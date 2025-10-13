@@ -1,10 +1,10 @@
 const { ROUTE_PREFIX } = require('../folders/utility/enum');
 const userRoutes = require('../folders/routes/user.routes');
-// const utilityRoutes = require('')
+const utilityRoutes = require('../folders/routes/utility.routes');
 
 const configureRoutes = (app) => {
   app.use(`${ROUTE_PREFIX}/users`, userRoutes);
-  // app.use(`${ROUTE_PREFIX}/utility`, utilityRoutes);
+  app.use(`${ROUTE_PREFIX}/utility`, utilityRoutes);
 };
 
 module.exports = configureRoutes;

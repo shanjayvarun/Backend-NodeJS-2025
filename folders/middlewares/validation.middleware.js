@@ -1,8 +1,8 @@
-const { body, validationResult } = require("express-validator");
+const { body, validationResult, query } = require("express-validator");
 const { ROLES } = require("../utility/enum");
 const jwt = require('jsonwebtoken');
 const { sendError } = require('../utility/responses');
-// const { getBlackListedTokenByAccessToken } = require("../services/blaclistedtoken.service");
+const { getBlackListedTokenByAccessToken } = require("../services/blaclistedtoken.service");
 require('dotenv').config();
 
 const validateUserRegistration = [
@@ -18,6 +18,11 @@ const validateUserLogin = [
   body("password").notEmpty().withMessage("Password is required"),
   handleValidationErrors
 ];
+
+const validateCity = [
+  query('city').notEmpty().withMessage('City is required'),
+  handleValidationErrors
+]
 
 const validateRefreshToken = [
   body("refreshToken").notEmpty().withMessage("Refresh Token is Missing"),
@@ -52,5 +57,6 @@ module.exports = {
   validateUserRegistration,
   validateUserLogin,
   validateRefreshToken,
+  validateCity,
   validateUserToken
 };
