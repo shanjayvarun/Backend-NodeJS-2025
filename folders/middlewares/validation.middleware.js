@@ -2,6 +2,7 @@ const { body, validationResult } = require("express-validator");
 const { ROLES } = require("../utility/enum");
 const jwt = require('jsonwebtoken');
 const { sendError } = require('../utility/responses');
+// const { getBlackListedTokenByAccessToken } = require("../services/blaclistedtoken.service");
 require('dotenv').config();
 
 const validateUserRegistration = [
@@ -23,11 +24,13 @@ const validateRefreshToken = [
   handleValidationErrors
 ]
 
-const validateUserToken = (req, res, next) => {
+const validateUserToken = async (req, res, next) => {
   const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
   if (!token) {
     return sendError(res, 401, 'No token provided. Unauthorized');
   }
+  const blaclistedtoken = await getBlackListedTokenByAccessToken({ token })
+  if (blaclistedtoken) return sendError(res, 403, 'Token is blacklisted')
   jwt.verify(token, process.env.JWT_ACCESS_SECRET, (err, decoded) => {
     if (err) {
       return sendError(res, 403, 'Failed to authenticate token');

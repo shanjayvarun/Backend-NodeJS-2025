@@ -2,10 +2,10 @@ const userService = require('../services/user.service');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const { hashPassword } = require('../utility/utility');
-const { sendSuccessPost, sendSuccessGet, sendError } = require('../utility/responses');
+const { sendSuccessPost, sendSuccessGet, sendError, sendSuccessNoContent } = require('../utility/responses');
+const { saveBlackListedTokens } = require('../services/blaclistedtoken.service');
 
 exports.loginUser = (req, res, next) => {
-  console.log(process.env.JWT_ACCESS_EXPIRES_IN);
   passport.authenticate('local', async (error, user, info) => {
     if (error) {
       return sendError(res, 500, error.message || 'Internal server error');
@@ -56,5 +56,18 @@ exports.generateRefreshToken = async (req, res) => {
     return sendSuccessPost(res, { newAccessToken }, 'Token refreshed successfully')
   } catch (error) {
     return sendError(error, 500, error.message);
+  }
+}
+
+exports.logout = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return sendError(res, 400, 'Token Required');
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET)
+    await saveBlackListedTokens({ token, expiresAt: decoded.exp })
+    await userService.updateUser(decoded.id, { refreshToken: null })
+    return sendSuccessNoContent(res)
+  } catch (error) {
+    return sendError(res, 403, 'Invalid token');
   }
 }
