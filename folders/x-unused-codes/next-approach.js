@@ -1,7 +1,11 @@
-// 2️⃣ Implement Refresh Tokens to avoid JWT expiration issues.
-// 3️⃣ Integrate Rate Limiting (Prevent brute-force attacks).
-// 3️⃣ Improve Logging (Use Winston or Morgan for error logs)
-// 2️⃣ Add Email Verification (Send confirmation emails)?
-// 3️⃣ Create a Forgot Password API?
-// Add to card APi Creation in Product management
+// Add Email Verification (Send confirmation emails)?
+// Create a Forgot Password API?
 // token blacklisting
+// Endpoint	Method	Purpose
+// /api/auth/forgot-password	POST	Request password reset link
+// /api/auth/reset-password/:token	POST	Set new password
+// /api/auth/me	GET	Get current logged-in user
+// /api/auth/change-password	PUT	Change current password
+// 🧩 2FA (Two Factor Authentication) via OTP/email
+// 🛡️ Role-based access control (RBAC) middleware
+// 📨 Email Verification on signup

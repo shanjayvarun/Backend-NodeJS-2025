@@ -2,9 +2,10 @@ const userService = require('../services/user.service');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const { hashPassword } = require('../utility/utility');
-const { sendSuccessPost, sendSuccessGet, sendError, sendSuccessUpdateOrDelete } = require('../utility/responses');
+const { sendSuccessPost, sendSuccessGet, sendError } = require('../utility/responses');
 
 exports.loginUser = (req, res, next) => {
+  console.log(process.env.JWT_ACCESS_EXPIRES_IN);
   passport.authenticate('local', async (error, user, info) => {
     if (error) {
       return sendError(res, 500, error.message || 'Internal server error');
@@ -12,11 +13,12 @@ exports.loginUser = (req, res, next) => {
     if (!user) {
       return sendError(res, 404, info.message);
     }
-    const token = jwt.sign({ id: user._id, role: user.role, email: user.email, name: user.name }, process.env.JWT_ACCESS_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN, algorithm: process.env.JWT_ALGO });
-    await userService.updateUser(user._id, { lastLoginAt: new Date() });
+    const accessToken = jwt.sign({ id: user._id, role: user.role, email: user.email, name: user.name }, process.env.JWT_ACCESS_SECRET, { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN, algorithm: process.env.JWT_ALGO });
+    const refreshToken = jwt.sign({ id: user._id, role: user.role, email: user.email, name: user.name }, process.env.JWT_REFRESH_SECRET, { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN, algorithm: process.env.JWT_ALGO });
+    await userService.updateUser(user._id, { lastLoginAt: new Date(), refreshToken });
     return sendSuccessGet(res, {
-      token,
-      expiresIn: 86400,
+      accessToken,
+      refreshToken,
       user: {
         id: user._id,
         name: user.name,
@@ -45,14 +47,13 @@ exports.createUser = async (req, res) => {
   }
 };
 
-exports.updateUser = async (req, res) => {
+exports.generateRefreshToken = async (req, res) => {
   try {
-    if (req.body.password) {
-      req.body.password = await hashPassword(req.body.password);
-    }
-    if (!req.body.profilePicture) delete req.body.profilePicture;
-    const task = await userService.updateUser(req.params.id, req.body);
-    return task ? sendSuccessUpdateOrDelete(res, 'User updated successfully') : sendError(res, 404, 'User not found');
+    const decoded = jwt.verify(req.body.refreshToken, process.env.JWT_REFRESH_SECRET)
+    const user = await userService.getUserById(decoded.id)
+    if (!user || user.refreshToken !== req.body.refreshToken) return sendError(res, 403, 'Invalid refresh token');
+    const newAccessToken = jwt.sign({ id: user._id, role: user.role, email: user.email, name: user.name }, process.env.JWT_ACCESS_SECRET, { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN, algorithm: process.env.JWT_ALGO });
+    return sendSuccessPost(res, { newAccessToken }, 'Token refreshed successfully')
   } catch (error) {
     return sendError(error, 500, error.message);
   }

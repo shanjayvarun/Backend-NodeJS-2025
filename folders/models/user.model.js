@@ -10,7 +10,8 @@ const userSchema = new mongoose.Schema(
     phone: { type: String, default: null },
     bio: { type: String, default: '' },
     isVerified: { type: Boolean, default: false },
-    lastLoginAt: { type: Date, default: Date.now() }
+    lastLoginAt: { type: Date, default: Date.now() },
+    refreshToken: { type: String, default: null }
   },
   {
     timestamps: true,

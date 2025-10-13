@@ -18,6 +18,11 @@ const validateUserLogin = [
   handleValidationErrors
 ];
 
+const validateRefreshToken = [
+  body("refreshToken").notEmpty().withMessage("Refresh Token is Missing"),
+  handleValidationErrors
+]
+
 const validateUserToken = (req, res, next) => {
   const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
   if (!token) {
@@ -43,5 +48,6 @@ function handleValidationErrors(req, res, next) {
 module.exports = {
   validateUserRegistration,
   validateUserLogin,
+  validateRefreshToken,
   validateUserToken
 };
