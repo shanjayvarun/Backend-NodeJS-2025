@@ -2,7 +2,8 @@ require('dotenv').config();
 
 const ROLES = {
     ADMIN: "ADMIN",
-    USER: "USER",
+    MANAGER: "MANAGER",
+    STAFF: "STAFF",
 };
 
 const S3FOLDERMAP = {

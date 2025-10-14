@@ -29,6 +29,31 @@ exports.loginUser = (req, res, next) => {
   })(req, res, next);
 };
 
+exports.generateRefreshToken = async (req, res) => {
+  try {
+    const decoded = jwt.verify(req.body.refreshToken, process.env.JWT_REFRESH_SECRET)
+    const user = await userService.getUserById(decoded.id)
+    if (!user || user.refreshToken !== req.body.refreshToken) return sendError(res, 403, 'Invalid refresh token');
+    const newAccessToken = jwt.sign({ id: user._id, role: user.role, email: user.email, name: user.name }, process.env.JWT_ACCESS_SECRET, { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN, algorithm: process.env.JWT_ALGO });
+    return sendSuccessPost(res, { newAccessToken }, 'Token refreshed successfully')
+  } catch (error) {
+    return sendError(error, 500, error.message);
+  }
+};
+
+exports.logout = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return sendError(res, 400, 'Token Required');
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET)
+    await saveBlackListedTokens({ token, expiresAt: decoded.exp })
+    await userService.updateUser(decoded.id, { refreshToken: null })
+    return sendSuccessNoContent(res)
+  } catch (error) {
+    return sendError(res, 403, 'Invalid token');
+  }
+};
+
 exports.createUser = async (req, res) => {
   try {
     const hashedPassword = await hashPassword(req.body.password)
@@ -47,27 +72,26 @@ exports.createUser = async (req, res) => {
   }
 };
 
-exports.generateRefreshToken = async (req, res) => {
+exports.getAllUsers = async (req, res) => {
   try {
-    const decoded = jwt.verify(req.body.refreshToken, process.env.JWT_REFRESH_SECRET)
-    const user = await userService.getUserById(decoded.id)
-    if (!user || user.refreshToken !== req.body.refreshToken) return sendError(res, 403, 'Invalid refresh token');
-    const newAccessToken = jwt.sign({ id: user._id, role: user.role, email: user.email, name: user.name }, process.env.JWT_ACCESS_SECRET, { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN, algorithm: process.env.JWT_ALGO });
-    return sendSuccessPost(res, { newAccessToken }, 'Token refreshed successfully')
+    let { status, searchBy, skip, limit, order, fromDate, toDate } = req.query;
+    let query = {};
+    let sortOrder = {};
+    skip = +skip || 0;
+    limit = +limit || 10;
+    if (status) query.userStatus = status;
+    if (searchBy) query.name = searchBy;
+    if (fromDate || toDate) {
+      if (fromDate > toDate) return sendError(res, 400, 'fromDate cannot be greater than toDate');
+      query.createdAt = {};
+      query.createdAt.$gte = fromDate;
+      query.createdAt.$lte = toDate;
+    }
+    sortOrder.createdAt = (order === 'desc') ? -1 : 1;
+    let users = await userService.getAllUsers(query, sortOrder, skip, limit);
+    if (!users || users.length === 0) return sendError(res, 404, 'No users found');
+    return sendSuccessGet(res, { users, count: users.length }, 'Users fetched successfully');
   } catch (error) {
-    return sendError(error, 500, error.message);
+    return sendError(res, 500, error.message);
   }
-}
-
-exports.logout = async (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return sendError(res, 400, 'Token Required');
-    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET)
-    await saveBlackListedTokens({ token, expiresAt: decoded.exp })
-    await userService.updateUser(decoded.id, { refreshToken: null })
-    return sendSuccessNoContent(res)
-  } catch (error) {
-    return sendError(res, 403, 'Invalid token');
-  }
-}
+};

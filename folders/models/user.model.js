@@ -5,13 +5,14 @@ const userSchema = new mongoose.Schema(
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    role: { type: String, default: "USER" },
+    role: { type: String, default: "STAFF" },
     profilePicture: { type: String, default: '' },
     phone: { type: String, default: null },
     bio: { type: String, default: '' },
     isVerified: { type: Boolean, default: false },
     lastLoginAt: { type: Date, default: Date.now() },
-    refreshToken: { type: String, default: null }
+    refreshToken: { type: String, default: null },
+    userStatus: { type: String, default: 'active' },
   },
   {
     timestamps: true,
