@@ -14,7 +14,8 @@ router.post("/sign-up", registerLimiter, validateUserRegistration, userControlle
 router.get("/all-users", validateUserToken, checkRole([ROLES.ADMIN, ROLES.MANAGER]), userController.getAllUsers);
 router.get("/all-user-by-id/:id", validateUserToken, checkRole([ROLES.ADMIN, ROLES.MANAGER]), userController.getUserById);
 router.put("/update-user/:id", validateUserToken, checkRole([ROLES.ADMIN, ROLES.MANAGER]), userController.updateUser);
-router.delete('/delete-user/:id', validateUserToken, checkRole([ROLES.ADMIN, ROLES.MANAGER]), userController.deleteUser)
-router.patch('/change-password', validateUserToken, checkRole([ROLES.ADMIN]), userController.changeUserPassword)
+router.delete('/delete-user/:id', validateUserToken, checkRole([ROLES.ADMIN, ROLES.MANAGER]), userController.deleteUser);
+router.patch('/change-password', validateUserToken, checkRole([ROLES.ADMIN]), userController.changeUserPassword);
+router.get("/stats", validateUserToken, checkRole([ROLES.ADMIN]), userController.userStats)
 
 module.exports = router;
