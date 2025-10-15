@@ -11,4 +11,13 @@ const hashPassword = async (password) => {
     }
 };
 
-module.exports = { hashPassword }
+const comparePassword = async (plainPassword, hashedPassword) => {
+    try {
+        const isMatch = await bcrypt.compare(plainPassword, hashedPassword);
+        return isMatch;
+    } catch (error) {
+        throw new Error("Error comparing password: " + error.message);
+    }
+};
+
+module.exports = { hashPassword, comparePassword }

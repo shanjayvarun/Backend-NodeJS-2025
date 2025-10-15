@@ -19,9 +19,17 @@ exports.getUserById = async (id) => {
 };
 
 exports.findOneByEmail = async (email) => {
-  return await User.findOne({ email: email });
+  return await User.findOne({ email: email }).lean();
 };
 
 exports.updateUser = async (id, data) => {
-  return await User.findByIdAndUpdate(id, data, { new: true });
+  return await User.findByIdAndUpdate(id, data, { new: true }).select('-password -refreshToken').lean();
+}
+
+exports.changePasswordByEmail = async (email, hashPassword) => {
+  return await User.findOneAndUpdate({ email: email }, { password: hashPassword }, { new: true }).select('-password -refreshToken').lean();
+}
+
+exports.deleteUser = async (id) => {
+  return await User.findByIdAndDelete(id).select("-password -refreshToken").lean()
 }

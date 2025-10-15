@@ -1,8 +1,8 @@
 const userService = require('../services/user.service');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
-const { hashPassword } = require('../utility/utility');
-const { sendSuccessPost, sendSuccessGet, sendError, sendSuccessNoContent } = require('../utility/responses');
+const { hashPassword, comparePassword } = require('../utility/utility');
+const { sendSuccessPost, sendSuccessGet, sendError, sendSuccessNoContent, sendSuccessUpdateOrDelete } = require('../utility/responses');
 const { saveBlackListedTokens } = require('../services/blaclistedtoken.service');
 
 exports.loginUser = (req, res, next) => {
@@ -100,6 +100,38 @@ exports.getUserById = async (req, res) => {
   try {
     const user = await userService.getUserById(req.params.id);
     user ? sendSuccessGet(res, user, 'User fetched successfully') : sendError(res, 404, 'No user found')
+  } catch (error) {
+    return sendError(res, 500, error.message);
+  }
+}
+
+exports.updateUser = async (req, res) => {
+  try {
+    const user = await userService.updateUser(req.params.id, req.body)
+    user ? sendSuccessUpdateOrDelete(res, user, 'User updated successfully') : sendError(404, res, 'User not found')
+  } catch (error) {
+    return sendError(res, 500, error.message);
+  }
+}
+
+exports.deleteUser = async (req, res) => {
+  try {
+    const user = await userService.deleteUser(req.params.id)
+    user ? sendSuccessUpdateOrDelete(res, user, 'User deleted successfully') : sendError(res, 404, 'User not found')
+  } catch (error) {
+    return sendError(res, 500, error.message);
+  }
+}
+
+exports.changeUserPassword = async (req, res) => {
+  try {
+    const user = await userService.findOneByEmail(req.user.email);
+    if (!user) return sendError(res, 404, 'User not found');
+    const isMatch = await comparePassword(req.body.oldPassword, user.password)
+    if (!isMatch) return sendError(res, 401, 'Existing password does not match the current one');
+    const hashedPassword = await hashPassword(req.body.newPassword)
+    const updatedUser = await userService.changePasswordByEmail(req.user.email, hashedPassword);
+    updatedUser ? sendSuccessUpdateOrDelete(res, 'Password updated successfully') : sendError(404, res, 'User not found')
   } catch (error) {
     return sendError(res, 500, error.message);
   }
