@@ -95,3 +95,12 @@ exports.getAllUsers = async (req, res) => {
     return sendError(res, 500, error.message);
   }
 };
+
+exports.getUserById = async (req, res) => {
+  try {
+    const user = await userService.getUserById(req.params.id);
+    user ? sendSuccessGet(res, user, 'User fetched successfully') : sendError(res, 404, 'No user found')
+  } catch (error) {
+    return sendError(res, 500, error.message);
+  }
+}

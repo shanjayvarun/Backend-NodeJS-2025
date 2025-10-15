@@ -12,5 +12,6 @@ router.post("/refresh-token", validateRefreshToken, userController.generateRefre
 router.post("/logout", validateUserToken, userController.logout);
 router.post("/sign-up", registerLimiter, validateUserRegistration, userController.createUser);
 router.get("/all-users", validateUserToken, checkRole([ROLES.ADMIN]), userController.getAllUsers)
+router.get("/all-user-by-id/:id", validateUserToken, checkRole([ROLES.ADMIN]), userController.getUserById)
 
 module.exports = router;

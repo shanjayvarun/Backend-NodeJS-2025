@@ -15,7 +15,7 @@ exports.getAllUsers = async (query, order, skip, limit) => {
 };
 
 exports.getUserById = async (id) => {
-  return await User.findById(id);
+  return await User.findById(id).select("-password -refreshToken").lean();
 };
 
 exports.findOneByEmail = async (email) => {
