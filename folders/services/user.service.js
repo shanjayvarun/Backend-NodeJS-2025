@@ -40,7 +40,12 @@ exports.userStats = async () => {
   const inactiveUsers = await User.countDocuments({ userStatus: 'inactive' });
   const pendingUsers = await User.countDocuments({ userStatus: 'pending' });
   const rolesAggregation = await User.aggregate([
-    { $group: { _id: '$role', count: { $sum: 1 } } }
+    {
+      $group: {
+        _id: '$role',
+        count: { $sum: 1 }
+      }
+    }
   ])
   const usersByRole = rolesAggregation.reduce((accumulator, element) => {
     accumulator[element._id] = element.count
@@ -50,7 +55,18 @@ exports.userStats = async () => {
   const usersByMonth = await User.countDocuments({
     createdAt: { $gte: startOfMonth }
   })
+  const userActivity = await User.aggregate([
+    {
+      $group: {
+        _id: {
+          year: { $year: '$lastLoginAt' },
+          month: { $month: '$lastLoginAt' }
+        },
+        count: { $sum: 1 }
+      }
+    }
+  ])
   const recentUsers = await User.find().sort({ createdAt: -1 }).limit(5).select("-password -refreshToken").lean()
-  const results = { totalUsers, activeUsers, inactiveUsers, pendingUsers, usersByRole, usersByMonth, recentUsers }
+  const results = { totalUsers, activeUsers, inactiveUsers, pendingUsers, usersByRole, usersByMonth, recentUsers, userActivity }
   return results
 }

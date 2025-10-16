@@ -140,7 +140,6 @@ exports.changeUserPassword = async (req, res) => {
 exports.userStats = async (req, res) => {
   try {
     const stats = await userService.userStats();
-    console.log(stats);
     if (!stats) return sendError(res, 404, 'No users statistics found');
     return sendSuccessGet(res, stats, 'Users statistics fetched successfully');
   } catch (error) {
