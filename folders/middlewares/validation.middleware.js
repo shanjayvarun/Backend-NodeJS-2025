@@ -29,6 +29,17 @@ const validateRefreshToken = [
   handleValidationErrors
 ]
 
+const validateCompany = [
+  body("name").notEmpty().withMessage("Name is required"),
+  body("email").notEmpty().withMessage("Email is required"),
+  body("type").notEmpty().withMessage("Type is required"),
+  body("location").notEmpty().withMessage("Location is required"),
+  body("description").notEmpty().withMessage("Description is required"),
+  body("DOI").notEmpty().withMessage("DOI is required"),
+  body("status").notEmpty().withMessage("Status is required"),
+  handleValidationErrors
+]
+
 const validateUserToken = async (req, res, next) => {
   const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
   if (!token) {
@@ -58,5 +69,6 @@ module.exports = {
   validateUserLogin,
   validateRefreshToken,
   validateCity,
+  validateCompany,
   validateUserToken
 };
