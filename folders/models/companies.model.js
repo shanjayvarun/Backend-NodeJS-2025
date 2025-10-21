@@ -1,6 +1,6 @@
 const mongoose = require("mongoose")
 
-const companiesSchema = new mongoose.Schema(
+const companiesSchema = new mongoose.Schema( 
     {
         name: { type: String, default: null },
         owner: { type: String, default: null },

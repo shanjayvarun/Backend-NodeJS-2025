@@ -10,6 +10,6 @@ router.post("/create-company", validateUserToken, checkRole([ROLES.ADMIN]), vali
 router.get("/get-all-companies", validateUserToken, checkRole([ROLES.ADMIN]), companiesController.getAllCompanies);
 router.get("/get-company-by-id/:id", validateUserToken, checkRole([ROLES.ADMIN]), companiesController.getCompanyById);
 router.put("/update-company/:id", validateUserToken, checkRole([ROLES.ADMIN]), companiesController.updateCompany);
-router.delete("/delete-company/:id", validateUserToken, checkRole([ROLES.ADMIN]), companiesController.deleteCompany);
+router.put("/soft-delete-company/:id", validateUserToken, checkRole([ROLES.ADMIN]), companiesController.softDeleteCompany);
 
 module.exports = router;

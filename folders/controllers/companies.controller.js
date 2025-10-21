@@ -1,8 +1,9 @@
 const companyService = require('../services/companies.service');
-const { sendSuccessPost, sendSuccessGet, sendError, sendSuccessNoContent, sendSuccessUpdateOrDelete } = require('../utility/responses');
+const { sendSuccessPost, sendSuccessGet, sendError, sendSuccessUpdateOrDelete } = require('../utility/responses');
 
 exports.createCompany = async (req, res) => {
     try {
+        req.body.createdBy = req.user.id
         const company = await companyService.createCompany(req.body)
         if (!company) return sendError(res, 404, 'Company creation failed')
         return sendSuccessPost(res, company, 'Company created successfully')
@@ -15,10 +16,10 @@ exports.getAllCompanies = async (req, res) => {
     try {
         let { status, searchBy, skip, limit, fromDate, toDate } = req.query
         skip = +skip || 0
-        limit = +limit || 0
+        limit = +limit || 10
         let query = {};
         if (status) { query.status = status }
-        if (searchBy) { query.name = searchBy }
+        if (searchBy) { query.name = { $regex: searchBy, $options: 'i' } }
         if (fromDate && toDate) {
             if (fromDate > toDate) return sendError(res, 400, 'fromDate cannot be greater than toDate');
             query.createdAt = {};
@@ -47,17 +48,17 @@ exports.updateCompany = async (req, res) => {
     try {
         const company = await companyService.updateCompany(req.params.id, req.body)
         if (!company) return sendError(res, 404, 'Company not found')
-        return sendSuccessGet(res, company, 'Company updated successfullly')
+        return sendSuccessUpdateOrDelete(res, 'Company updated successfullly')
     } catch (error) {
         return sendError(res, 500, error.message);
     }
 }
 
-exports.deleteCompany = async (req, res) => {
+exports.softDeleteCompany = async (req, res) => {
     try {
-        const company = await companyService.deleteCompany(req.params.id)
+        const company = await companyService.softDeleteCompany(req.params.id)
         if (!company) return sendError(res, 404, 'Company not found')
-        return sendSuccessGet(res, company, 'Company deleted successfullly')
+        return sendSuccessUpdateOrDelete(res, 'Company deleted successfullly')
     } catch (error) {
         return sendError(res, 500, error.message);
     }

@@ -31,12 +31,13 @@ const validateRefreshToken = [
 
 const validateCompany = [
   body("name").notEmpty().withMessage("Name is required"),
-  body("email").notEmpty().withMessage("Email is required"),
+  body("email").notEmpty().isEmail().withMessage("Email is required"),
   body("type").notEmpty().withMessage("Type is required"),
   body("location").notEmpty().withMessage("Location is required"),
   body("description").notEmpty().withMessage("Description is required"),
   body("DOI").notEmpty().withMessage("DOI is required"),
   body("status").notEmpty().withMessage("Status is required"),
+  body('rating').optional().isNumeric(),
   handleValidationErrors
 ]
 
