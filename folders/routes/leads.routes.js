@@ -7,7 +7,7 @@ const leadsController = require('../controllers/leads.controller');
 const router = express.Router();
 
 router.post("/create-lead", validateUserToken, checkRole([ROLES.ADMIN]), leadsController.createLead);
-// router.get("/get-all-leads", validateUserToken, checkRole([ROLES.ADMIN]));
+router.get("/get-all-leads", validateUserToken, checkRole([ROLES.ADMIN]), leadsController.getAllLeads);
 // router.get("/get-lead-by-id/:id", validateUserToken, checkRole([ROLES.ADMIN]));
 // router.put("/update-lead/:id", validateUserToken, checkRole([ROLES.ADMIN]));
 // router.put("/soft-delete-lead/:id", validateUserToken, checkRole([ROLES.ADMIN]));
