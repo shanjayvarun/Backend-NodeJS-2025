@@ -1,5 +1,6 @@
 const leadService = require('../services/leads.service');
 const { sendSuccessPost, sendSuccessGet, sendError, sendSuccessUpdateOrDelete } = require('../utility/responses');
+const companyService = require('../services/companies.service');
 
 exports.createLead = async (req, res) => {
     try {
@@ -45,6 +46,39 @@ exports.getAllLeads = async (req, res) => {
         const leads = await leadService.getAllLeads(query, sort, skip, limit);
         if (!leads) return sendError(res, 404, 'Leads not found')
         return sendSuccessGet(res, leads, 'Leads fetched successfullly')
+    } catch (error) {
+        return sendError(res, 500, error.message);
+    }
+}
+
+exports.getLeadById = async (req, res) => {
+    try {
+        const lead = await leadService.getLeadById(req.params.id)
+        if (!lead) return sendError(res, 404, 'Lead not found')
+        return sendSuccessGet(res, lead, 'Lead fetched successfullly')
+    } catch (error) {
+        return sendError(res, 500, error.message);
+    }
+}
+
+exports.updateLead = async (req, res) => {
+    try {
+        // if (req.body.status == 'Converted') {
+        //     await companyService.createCompany()
+        // }
+        const lead = await leadService.updateLead(req.params.id, req.body)
+        if (!lead) return sendError(res, 404, 'Lead not found')
+        return sendSuccessUpdateOrDelete(res, 'Lead updated successfullly')
+    } catch (error) {
+        return sendError(res, 500, error.message);
+    }
+}
+
+exports.softDeleteLead = async (req, res) => {
+    try {
+        const lead = await leadService.softDeleteLead(req.params.id)
+        if (!lead) return sendError(res, 404, 'Lead not found')
+        return sendSuccessUpdateOrDelete(res, 'Lead deleted successfullly')
     } catch (error) {
         return sendError(res, 500, error.message);
     }

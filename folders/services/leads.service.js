@@ -9,3 +9,15 @@ exports.getAllLeads = async (query, sort, skip, limit) => {
     const count = leads.length
     return { leads, count }
 }
+
+exports.getLeadById = async (id) => {
+    return await Leads.findById(id).populate('createdBy assignedTo', 'name email role').lean()
+}
+
+exports.updateLead = async (id, data) => {
+    return await Leads.findByIdAndUpdate(id, data, { new: true, overwrite: false })
+}
+
+exports.softDeleteLead = async (id) => {
+    return await Leads.findByIdAndUpdate(id, { status: 'Lost' }, { new: true });
+}
