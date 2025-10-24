@@ -20,10 +20,12 @@ const S3FOLDERMAP = {
     flv: 'VIDEOS'
 }
 
+const LEADSTATUS = ['New', 'Contacted', 'Qualified', 'Converted', 'Lost', 'Follow-Up']
+
 const ALLOWEDTYPES = ['jpeg', 'png', 'jpg', 'svg', 'csv', 'xls', 'xlsx', 'pdf', 'mp4', 'mov', 'mkv', 'flv'];
 
 const NOTIFICATION_TYPES = ["comment", "like", "mention", "system"]
 
 const ROUTE_PREFIX = `/${process.env.SUBDOMAIN}/${process.env.VERSION}`;
 
-module.exports = { ROLES, ALLOWEDTYPES, S3FOLDERMAP, ROUTE_PREFIX, NOTIFICATION_TYPES };
+module.exports = { ROLES, ALLOWEDTYPES, S3FOLDERMAP, ROUTE_PREFIX, NOTIFICATION_TYPES, LEADSTATUS };

@@ -1,6 +1,6 @@
 const mongoose = require("mongoose")
 
-const companiesSchema = new mongoose.Schema( 
+const companySchema = new mongoose.Schema( 
     {
         name: { type: String, default: null },
         owner: { type: String, default: null },
@@ -23,4 +23,4 @@ const companiesSchema = new mongoose.Schema(
     }
 )
 
-module.exports = mongoose.model('Companies', companiesSchema)
+module.exports = mongoose.model('Companies', companySchema)
