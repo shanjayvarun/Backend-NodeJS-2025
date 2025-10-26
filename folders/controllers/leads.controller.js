@@ -1,11 +1,13 @@
 const leadService = require('../services/leads.service');
 const { sendSuccessPost, sendSuccessGet, sendError, sendSuccessUpdateOrDelete } = require('../utility/responses');
 const companyService = require('../services/companies.service');
-const tagService = require('../services/tags.service')
+const tagService = require('../services/tags.service');
+const { calculateLeadScore } = require('../utility/utility');
 
 exports.createLead = async (req, res) => {
     try {
         req.body.createdBy = req.user.id
+        req.body.leadsScore = await calculateLeadScore(req.body)
         const lead = await leadService.createLead(req.body)
         if (!lead) return sendError(res, 404, 'Lead creation failed')
         return sendSuccessPost(res, lead, 'Lead created successfully')
@@ -67,22 +69,26 @@ exports.updateLead = async (req, res) => {
         if (req.body.status == 'Converted') {
             const lead = await leadService.getLeadById(req.params.id);
             if (!lead) return sendError(res, 404, 'Lead not found');
+            const updatedLeadData = { ...lead, ...req.body };
+            updatedLeadData.leadsScore = await calculateLeadScore(updatedLeadData);
+            await leadService.updateLead(req.params.id, updatedLeadData);
             delete lead.leadsScore;
             delete lead.source;
-            delete lead.leadtags;
             delete lead.assignedTo;
             delete lead.isExempted;
-            lead.totalEmployees = req.body.totalEmployees
-            lead.rating = req.body.rating
-            lead.DOI = req.body.DOI
+            lead.totalEmployees = req.body.totalEmployees || '500-1000'
+            lead.rating = req.body.rating || 5
+            lead.DOI = req.body.DOI || Date.now()
             lead.status = 'active'
             lead.createdBy = req.user.id
-            const company = await companyService.createCompany(lead);
-            if (!company) return sendError(res, 404, 'Lead conversion to client failed.');
+            await companyService.createCompany(lead);
             return sendSuccessUpdateOrDelete(res, 'Lead converted to client successfully.');
         }
-        const lead = await leadService.updateLead(req.params.id, req.body);
-        if (!lead) return sendError(res, 404, 'Lead not found');
+        const leadById = await leadService.getLeadById(req.params.id);
+        if (!leadById) return sendError(res, 404, 'Lead not found');
+        const updatedLeadData = { ...leadById, ...req.body };
+        updatedLeadData.leadsScore = await calculateLeadScore(updatedLeadData);
+        await leadService.updateLead(req.params.id, updatedLeadData);
         return sendSuccessUpdateOrDelete(res, 'Lead updated successfullly');
     } catch (error) {
         return sendError(res, 500, error.message);

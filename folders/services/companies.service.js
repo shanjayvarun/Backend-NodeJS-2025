@@ -1,7 +1,7 @@
 const Companies = require('../models/companies.model');
 
 exports.createCompany = async (data) => {
-    return await Companies(data).save()
+    return await new Companies(data).save()
 }
 
 exports.getAllCompanies = async (query, skip, limit) => {

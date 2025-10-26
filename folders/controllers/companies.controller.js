@@ -8,6 +8,9 @@ exports.createCompany = async (req, res) => {
         if (!company) return sendError(res, 404, 'Company creation failed')
         return sendSuccessPost(res, company, 'Company created successfully')
     } catch (error) {
+        if (error.code == 11000) {
+            return sendError(res, 409, 'Company already exists');
+        }
         return sendError(res, 500, error.message);
     }
 }

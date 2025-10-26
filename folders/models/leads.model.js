@@ -3,10 +3,10 @@ const { LEADSTATUS } = require('../utility/enum')
 
 const LeadSchema = new mongoose.Schema(
     {
-        owner: { type: String, default: null, required: true },
+        owner: { type: String, default: null },
         name: { type: String, default: null },
         logo: { type: String, default: null },
-        email: { type: String, trim: true, lowercase: true },
+        email: { type: String, trim: true, lowercase: true, unique: true },
         leadsScore: { type: Number, default: 0 },
         phoneNumber: { type: String, default: null, trim: true },
         location: { type: String, default: null },

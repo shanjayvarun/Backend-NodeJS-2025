@@ -32,12 +32,22 @@ const validateRefreshToken = [
 const validateCompany = [
   body("name").notEmpty().withMessage("Name is required"),
   body("email").notEmpty().isEmail().withMessage("Email is required"),
-  body("type").notEmpty().withMessage("Type is required"),
+  body("tags").notEmpty().withMessage("Tags is required"),
   body("location").notEmpty().withMessage("Location is required"),
   body("description").notEmpty().withMessage("Description is required"),
   body("DOI").notEmpty().withMessage("DOI is required"),
   body("status").notEmpty().withMessage("Status is required"),
   body('rating').optional().isNumeric(),
+  handleValidationErrors
+]
+
+const validateLead = [
+  body("name").notEmpty().withMessage("Name is required"),
+  body("email").notEmpty().isEmail().withMessage("Email is required"),
+  body("tags").notEmpty().withMessage("Tags is required"),
+  body("location").notEmpty().withMessage("Location is required"),
+  body("description").notEmpty().withMessage("Description is required"),
+  body("status").notEmpty().withMessage("Status is required"),
   handleValidationErrors
 ]
 
@@ -71,5 +81,6 @@ module.exports = {
   validateRefreshToken,
   validateCity,
   validateCompany,
+  validateLead,
   validateUserToken
 };

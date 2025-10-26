@@ -1,7 +1,7 @@
 const Leads = require('../models/leads.model');
 
 exports.createLead = async (data) => {
-    return await Leads(data).save()
+    return await new Leads(data).save()
 }
 
 exports.getAllLeads = async (query, sort, skip, limit) => {
@@ -15,7 +15,7 @@ exports.getLeadById = async (id) => {
 }
 
 exports.updateLead = async (id, data) => {
-    return await Leads.findByIdAndUpdate(id, data, { new: true, overwrite: false })
+    return await Leads.findByIdAndUpdate(id, data, { new: true });
 }
 
 exports.softDeleteLead = async (id) => {

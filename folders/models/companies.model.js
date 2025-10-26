@@ -10,7 +10,7 @@ const companySchema = new mongoose.Schema(
         description: { type: String, default: null },
         logo: { type: String, default: null },
         website: { type: String, default: null },
-        email: { type: String, default: null, unique: true },
+        email: { type: String, trim: true, lowercase: true, unique: true, required: true },
         phoneNumber: { type: String, default: null, trim: true },
         totalEmployees: { type: String, default: null },
         DOI: { type: String, default: null },
