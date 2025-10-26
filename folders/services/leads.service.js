@@ -21,3 +21,12 @@ exports.updateLead = async (id, data) => {
 exports.softDeleteLead = async (id) => {
     return await Leads.findByIdAndUpdate(id, { status: 'Lost' }, { new: true });
 }
+
+exports.getAllLeadStatus = async () => {
+    const leads = await Leads.find().lean();
+    const leadsByStatuses = leads.reduce((accumulator, element) => {
+        accumulator[element.name] = element.status
+        return accumulator
+    }, {})
+    return leadsByStatuses
+}

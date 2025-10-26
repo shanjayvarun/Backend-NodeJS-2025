@@ -11,7 +11,7 @@ router.get("/get-all-leads", validateUserToken, checkRole([ROLES.ADMIN]), leadsC
 router.get("/get-lead-by-id/:id", validateUserToken, checkRole([ROLES.ADMIN]), leadsController.getLeadById);
 router.put("/update-lead/:id", validateUserToken, checkRole([ROLES.ADMIN]), leadsController.updateLead);
 router.put("/soft-delete-lead/:id", validateUserToken, checkRole([ROLES.ADMIN]), leadsController.softDeleteLead);
-// router.get("/get-lead-statuses", validateUserToken, checkRole([ROLES.ADMIN]));
+router.get("/get-lead-statuses", validateUserToken, checkRole([ROLES.ADMIN]), leadsController.getLeadStatuses);
 // router.get("/get-lead-tags", validateUserToken, checkRole([ROLES.ADMIN]));
 // router.post("/calculate-lead-score", validateUserToken, checkRole([ROLES.ADMIN]));
 

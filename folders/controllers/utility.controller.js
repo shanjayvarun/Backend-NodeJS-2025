@@ -1,6 +1,7 @@
 const upload = require('../../config/upload-file.config');
 const { sendSuccessUpdateOrDelete, sendError, sendSuccessGet } = require('../utility/responses');
 const { s3, s3params, listS3Files } = require("../utility/s3");
+const { getCountries } = require("../utility/utility");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { GetObjectCommand } = require('@aws-sdk/client-s3');
 require('dotenv').config();
@@ -62,3 +63,16 @@ exports.weatherDetails = async (req, res) => {
         sendError(res, 500, "Weather API is currently unavailable. Please try again later.");
     }
 };
+
+exports.getCountries = async (req, res) => {
+    try {
+        let { skip, limit } = req.query
+        skip = +skip || 0
+        limit = +limit || 10
+        const countries = await getCountries(skip, limit);
+        if (!countries) return sendError(res, 404, 'Countries not found')
+        return sendSuccessGet(res, countries, 'Countries fetched successfullly')
+    } catch (error) {
+        return sendError(res, 500, error.message);
+    }
+}

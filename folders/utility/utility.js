@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const { sendError } = require('./responses');
+const Country = require('../models/countries.model')
 
 const hashPassword = async (password) => {
     try {
@@ -20,4 +21,9 @@ const comparePassword = async (plainPassword, hashedPassword) => {
     }
 };
 
-module.exports = { hashPassword, comparePassword }
+const getCountries = async (skip, limit) => {
+    const countries = await Country.find().skip(skip == -1 ? 0 : skip).limit(limit).lean();
+    return countries;
+}
+
+module.exports = { hashPassword, comparePassword, getCountries }
