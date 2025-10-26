@@ -1,6 +1,7 @@
 const leadService = require('../services/leads.service');
 const { sendSuccessPost, sendSuccessGet, sendError, sendSuccessUpdateOrDelete } = require('../utility/responses');
 const companyService = require('../services/companies.service');
+const tagService = require('../services/tags.service')
 
 exports.createLead = async (req, res) => {
     try {
@@ -103,6 +104,29 @@ exports.getLeadStatuses = async (req, res) => {
         const leadStatuses = await leadService.getAllLeadStatus()
         if (!leadStatuses) return sendError(res, 404, 'Leads not found')
         return sendSuccessGet(res, leadStatuses, 'Lead Statuses fetched successfullly')
+    } catch (error) {
+        return sendError(res, 500, error.message);
+    }
+}
+
+exports.getLeadTags = async (req, res) => {
+    try {
+        let { skip, limit } = req.query
+        skip = +skip || 0
+        limit = +limit || 20
+        const tags = await tagService.getTags(skip, limit)
+        if (!tags) return sendError(res, 404, 'Tags not found')
+        return sendSuccessGet(res, tags, 'Tags fetched successfullly')
+    } catch (error) {
+        return sendError(res, 500, error.message);
+    }
+}
+
+exports.createLeadTag = async (req, res) => {
+    try {
+        const tag = await tagService.createTag(req.body)
+        if (!tag) return sendError(res, 404, 'Tag creation failed')
+        return sendSuccessPost(res, tag, 'Tag created successfully')
     } catch (error) {
         return sendError(res, 500, error.message);
     }
