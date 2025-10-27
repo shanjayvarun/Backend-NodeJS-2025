@@ -61,7 +61,7 @@ exports.getLeadStats = async () => {
         }
     ])
     let result = {};
-    result.stats = stats[0];
     result.totalLeads = totalLeads
+    result.stats = stats[0];
     return result;
 }

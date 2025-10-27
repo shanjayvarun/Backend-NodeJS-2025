@@ -67,3 +67,13 @@ exports.softDeleteCompany = async (req, res) => {
     }
 }
 
+exports.getCompanyStats = async (req, res) => {
+    try {
+        const company = await companyService.getCompanyStats()
+        if (!company) return sendError(res, 404, 'No company statistics found')
+        return sendSuccessGet(res, company, 'Company statistics fetched successfully');
+    } catch (error) {
+        return sendError(res, 500, error.message);
+    }
+}
+

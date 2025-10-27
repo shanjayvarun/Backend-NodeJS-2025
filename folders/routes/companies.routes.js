@@ -11,5 +11,6 @@ router.get("/get-all-companies", validateUserToken, checkRole([ROLES.ADMIN]), co
 router.get("/get-company-by-id/:id", validateUserToken, checkRole([ROLES.ADMIN]), companiesController.getCompanyById);
 router.put("/update-company/:id", validateUserToken, checkRole([ROLES.ADMIN]), companiesController.updateCompany);
 router.put("/soft-delete-company/:id", validateUserToken, checkRole([ROLES.ADMIN]), companiesController.softDeleteCompany);
+router.get("/stats", validateUserToken, checkRole([ROLES.ADMIN]), companiesController.getCompanyStats)
 
 module.exports = router;
