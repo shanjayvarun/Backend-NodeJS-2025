@@ -25,4 +25,11 @@ const LeadSchema = new mongoose.Schema(
     }
 )
 
+LeadSchema.index({ location: 1 });
+LeadSchema.index({ createdAt: -1 });
+LeadSchema.index({ status: 1 });
+LeadSchema.index({ leadsScore: -1 });
+LeadSchema.index({ assignedTo: 1 });
+LeadSchema.index({ createdBy: 1 });
+
 module.exports = mongoose.model('Leads', LeadSchema)

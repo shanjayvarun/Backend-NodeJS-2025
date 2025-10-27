@@ -12,6 +12,9 @@ exports.createLead = async (req, res) => {
         if (!lead) return sendError(res, 404, 'Lead creation failed')
         return sendSuccessPost(res, lead, 'Lead created successfully')
     } catch (error) {
+        if (error.code == 11000) {
+            return sendError(res, 409, 'Lead already exists');
+        }
         return sendError(res, 500, error.message);
     }
 };
@@ -133,6 +136,16 @@ exports.createLeadTag = async (req, res) => {
         const tag = await tagService.createTag(req.body)
         if (!tag) return sendError(res, 404, 'Tag creation failed')
         return sendSuccessPost(res, tag, 'Tag created successfully')
+    } catch (error) {
+        return sendError(res, 500, error.message);
+    }
+}
+
+exports.getLeadStats = async (req, res) => {
+    try {
+        const stats = await leadService.getLeadStats();
+        if (!stats) return sendError(res, 404, 'No lead statistics found');
+        return sendSuccessGet(res, stats, 'Lead statistics fetched successfully');
     } catch (error) {
         return sendError(res, 500, error.message);
     }

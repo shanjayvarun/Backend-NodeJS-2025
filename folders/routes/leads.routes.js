@@ -14,5 +14,6 @@ router.put("/soft-delete-lead/:id", validateUserToken, checkRole([ROLES.ADMIN]),
 router.get("/get-lead-statuses", validateUserToken, checkRole([ROLES.ADMIN]), leadsController.getLeadStatuses);
 router.get("/get-lead-tags", validateUserToken, checkRole([ROLES.ADMIN]), leadsController.getLeadTags);
 router.post("/create-lead-tag", validateUserToken, checkRole([ROLES.ADMIN]), leadsController.createLeadTag);
+router.get("/stats", validateUserToken, checkRole([ROLES.ADMIN]), leadsController.getLeadStats);
 
 module.exports = router; 

@@ -30,3 +30,38 @@ exports.getAllLeadStatus = async () => {
     }, {})
     return leadsByStatuses
 }
+
+exports.getLeadStats = async () => {
+    const totalLeads = await Leads.countDocuments();
+    const stats = await Leads.aggregate([
+        {
+            $facet: {
+                byStatus: [
+                    { $group: { _id: "$status", count: { $sum: 1 } } },
+                    { $sort: { count: -1 } }
+                ],
+                bySource: [
+                    { $group: { _id: "$source", count: { $sum: 1 } } },
+                    { $sort: { count: -1 } }
+                ],
+                byLocation: [
+                    { $group: { _id: "$location", count: { $sum: 1 } } },
+                    { $sort: { count: -1 } }
+                ],
+                byMonth: [
+                    { $group: { _id: { $month: "$createdAt" }, count: { $sum: 1 } } },
+                    { $sort: { _id: -1 } },
+                    { $project: { _id: 0, month: "$_id", count: 1 } }
+                ],
+                scoreBuckets: [
+                    { $bucket: { groupBy: "$leadsScore", boundaries: [0, 25, 50, 75, 100], output: { count: { $sum: 1 } } } },
+                    { $sort: { _id: -1 } }
+                ]
+            }
+        }
+    ])
+    let result = {};
+    result.stats = stats[0];
+    result.totalLeads = totalLeads
+    return result;
+}
