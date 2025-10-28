@@ -76,4 +76,14 @@ const calculateLeadScore = async (lead) => {
     return score
 }
 
-module.exports = { hashPassword, comparePassword, getCountries, calculateLeadScore }
+const DEAL_PROBABILITY = {
+  "Lead Discovered": 10,
+  "Contact Initiated": 25,
+  "Needs Identified": 40,
+  "Meeting Arranged": 60,
+  "Offer Accepted": 90,
+  "Closed Won": 100,
+  "Closed Lost": 0
+};
+
+module.exports = { hashPassword, comparePassword, getCountries, calculateLeadScore, DEAL_PROBABILITY }

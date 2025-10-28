@@ -51,6 +51,13 @@ const validateLead = [
   handleValidationErrors
 ]
 
+const validateDeal = [
+  body("title").notEmpty().withMessage("Title is required"),
+  body("amount").notEmpty().withMessage("Amount is required"),
+  body("expectedCloseDate").notEmpty().withMessage("Expected Closing Date is required"),
+  handleValidationErrors
+]
+
 const validateUserToken = async (req, res, next) => {
   const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
   if (!token) {
@@ -82,5 +89,6 @@ module.exports = {
   validateCity,
   validateCompany,
   validateLead,
+  validateDeal,
   validateUserToken
 };

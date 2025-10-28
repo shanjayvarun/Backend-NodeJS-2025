@@ -22,10 +22,22 @@ const S3FOLDERMAP = {
 
 const LEADSTATUS = ['New', 'Contacted', 'Qualified', 'Converted', 'Lost', 'Follow-Up']
 
+const DEALSTAGES = [
+    "Lead Discovered",
+    "Contact Initiated",
+    "Needs Identified",
+    "Meeting Arranged",
+    "Offer Accepted",
+    "Closed Won",
+    "Closed Lost"
+]
+
+const DEALSTATUSFLAGS = ["open", "won", "lost"]
+
 const ALLOWEDTYPES = ['jpeg', 'png', 'jpg', 'svg', 'csv', 'xls', 'xlsx', 'pdf', 'mp4', 'mov', 'mkv', 'flv'];
 
 const NOTIFICATION_TYPES = ["comment", "like", "mention", "system"]
 
 const ROUTE_PREFIX = `/${process.env.SUBDOMAIN}/${process.env.VERSION}`;
 
-module.exports = { ROLES, ALLOWEDTYPES, S3FOLDERMAP, ROUTE_PREFIX, NOTIFICATION_TYPES, LEADSTATUS };
+module.exports = { ROLES, ALLOWEDTYPES, S3FOLDERMAP, ROUTE_PREFIX, NOTIFICATION_TYPES, LEADSTATUS, DEALSTAGES, DEALSTATUSFLAGS };
