@@ -9,6 +9,7 @@
         "dev": "nodemon server.js"
     },
     "dependencies": {
+        "@aws-sdk/client-cloudwatch-logs": "^3.919.0",
         "@aws-sdk/client-s3": "^3.740.0",
         "@aws-sdk/s3-request-presigner": "^3.758.0",
         "aws-sdk": "^2.1692.0",
@@ -31,7 +32,9 @@
         "passport-local": "^1.0.0",
         "path": "^0.12.7",
         "socket.io": "^4.8.1",
-        "winston": "^3.16.0"
+        "winston": "^3.18.3",
+        "winston-cloudwatch": "^6.3.0",
+        "winston-daily-rotate-file": "^5.0.0"
     },
     "devDependencies": {
         "nodemon": "^3.1.7"

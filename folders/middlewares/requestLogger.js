@@ -13,8 +13,7 @@ const requestLogger = (req, res, next) => {
             query: req.query,
             body: req.body,
             responseTime: `${responseTime} Seconds`,
-            // headers: req.headers,
-            // userAgent: req.get('User-Agent'),
+            headers: req.headers,
         };
         logger.info(`${JSON.stringify(logData, null, 2)}`);
     });
