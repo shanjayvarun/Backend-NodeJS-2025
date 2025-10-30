@@ -1,10 +1,10 @@
 const app = require('./app');
 const http = require("http");
-const PORT = process.env.PORT || 3000;
 const logger = require('./config/logger');
+const environment = require('./config/env.config');
 
 const server = http.createServer(app);
 
-server.listen(PORT, () => {
-  logger.info(`Server started on port ${PORT}`);
+server.listen(environment.port, () => {
+  logger.info(`Server: (${environment.mode}) started on Port: ${environment.port}`);
 });  

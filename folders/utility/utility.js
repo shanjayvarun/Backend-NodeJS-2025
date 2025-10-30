@@ -1,10 +1,11 @@
 const bcrypt = require('bcrypt');
 const { sendError } = require('./responses');
-const Country = require('../models/countries.model')
+const Country = require('../models/countries.model');
+const environment = require('../../config/env.config')
 
 const hashPassword = async (password) => {
     try {
-        const saltRounds = process.env.NODE_ENV == 'development' ? 10 : 12
+        const saltRounds = environment.mode == 'development' ? 10 : 12
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         return hashedPassword;
     } catch (error) {

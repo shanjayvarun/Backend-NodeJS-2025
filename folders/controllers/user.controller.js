@@ -4,6 +4,7 @@ const passport = require('passport');
 const { hashPassword, comparePassword } = require('../utility/utility');
 const { sendSuccessPost, sendSuccessGet, sendError, sendSuccessNoContent, sendSuccessUpdateOrDelete } = require('../utility/responses');
 const { saveBlackListedTokens } = require('../services/blaclistedtoken.service');
+const environment = require('../../config/env.config')
 
 exports.loginUser = (req, res, next) => {
   passport.authenticate('local', async (error, user, info) => {
@@ -13,8 +14,8 @@ exports.loginUser = (req, res, next) => {
     if (!user) {
       return sendError(res, 404, info.message);
     }
-    const accessToken = jwt.sign({ id: user._id, role: user.role, email: user.email, name: user.name }, process.env.JWT_ACCESS_SECRET, { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN, algorithm: process.env.JWT_ALGO });
-    const refreshToken = jwt.sign({ id: user._id, role: user.role, email: user.email, name: user.name }, process.env.JWT_REFRESH_SECRET, { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN, algorithm: process.env.JWT_ALGO });
+    const accessToken = jwt.sign({ id: user._id, role: user.role, email: user.email, name: user.name }, environment.jwt.accessSecret, { expiresIn: environment.jwt.accessExpiresIn, algorithm: environment.jwt.algorithm });
+    const refreshToken = jwt.sign({ id: user._id, role: user.role, email: user.email, name: user.name }, environment.jwt.refreshSecret, { expiresIn: environment.jwt.refreshExpiresIn, algorithm: environment.jwt.algorithm });
     await userService.updateUser(user._id, { lastLoginAt: new Date(), refreshToken });
     return sendSuccessGet(res, {
       accessToken,
@@ -31,10 +32,10 @@ exports.loginUser = (req, res, next) => {
 
 exports.generateRefreshToken = async (req, res) => {
   try {
-    const decoded = jwt.verify(req.body.refreshToken, process.env.JWT_REFRESH_SECRET)
+    const decoded = jwt.verify(req.body.refreshToken, environment.JWT_REFRESH_SECRET)
     const user = await userService.getUserById(decoded.id)
     if (!user || user.refreshToken !== req.body.refreshToken) return sendError(res, 403, 'Invalid refresh token');
-    const newAccessToken = jwt.sign({ id: user._id, role: user.role, email: user.email, name: user.name }, process.env.JWT_ACCESS_SECRET, { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN, algorithm: process.env.JWT_ALGO });
+    const newAccessToken = jwt.sign({ id: user._id, role: user.role, email: user.email, name: user.name }, environment.jwt.accessSecret, { expiresIn: environment.jwt.accessExpiresIn, algorithm: environment.jwt.algorithm });
     return sendSuccessPost(res, { newAccessToken }, 'Token refreshed successfully')
   } catch (error) {
     return sendError(error, 500, error.message);
@@ -45,7 +46,7 @@ exports.logout = async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return sendError(res, 400, 'Token Required');
-    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET)
+    const decoded = jwt.verify(token, environment.jwt.accessSecret)
     await saveBlackListedTokens({ token, expiresAt: decoded.exp })
     await userService.updateUser(decoded.id, { refreshToken: null })
     return sendSuccessNoContent(res)

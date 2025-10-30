@@ -1,4 +1,4 @@
-require('dotenv').config();
+const environment = require('../../config/env.config')
 
 const ROLES = {
     ADMIN: "ADMIN",
@@ -38,6 +38,6 @@ const ALLOWEDTYPES = ['jpeg', 'png', 'jpg', 'svg', 'csv', 'xls', 'xlsx', 'pdf', 
 
 const NOTIFICATION_TYPES = ["comment", "like", "mention", "system"]
 
-const ROUTE_PREFIX = `/${process.env.SUBDOMAIN}/${process.env.VERSION}`;
+const ROUTE_PREFIX = `/${environment.subdomain}/${environment.version}`;
 
 module.exports = { ROLES, ALLOWEDTYPES, S3FOLDERMAP, ROUTE_PREFIX, NOTIFICATION_TYPES, LEADSTATUS, DEALSTAGES, DEALSTATUSFLAGS };

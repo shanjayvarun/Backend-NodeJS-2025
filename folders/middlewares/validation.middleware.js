@@ -3,6 +3,7 @@ const { ROLES } = require("../utility/enum");
 const jwt = require('jsonwebtoken');
 const { sendError } = require('../utility/responses');
 const { getBlackListedTokenByAccessToken } = require("../services/blaclistedtoken.service");
+const environment = require('../../config/env.config')
 require('dotenv').config();
 
 const validateUserRegistration = [
@@ -65,7 +66,7 @@ const validateUserToken = async (req, res, next) => {
   }
   const blaclistedtoken = await getBlackListedTokenByAccessToken({ token })
   if (blaclistedtoken) return sendError(res, 403, 'Token is blacklisted')
-  jwt.verify(token, process.env.JWT_ACCESS_SECRET, (err, decoded) => {
+  jwt.verify(token, environment.jwt.accessSecret, (err, decoded) => {
     if (err) {
       return sendError(res, 403, 'Failed to authenticate token');
     }

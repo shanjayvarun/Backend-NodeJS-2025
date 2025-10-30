@@ -5,8 +5,8 @@
     "main": "server.js",
     "author": "Shanjay-Varun",
     "scripts": {
-        "start": "nodemon server.js",
-        "dev": "nodemon server.js"
+        "dev": "cross-env NODE_ENV=development nodemon server.js",
+        "start": "cross-env NODE_ENV=production node server.js"
     },
     "dependencies": {
         "@aws-sdk/client-cloudwatch-logs": "^3.919.0",
@@ -16,6 +16,7 @@
         "axios": "^1.8.4",
         "bcrypt": "^5.1.1",
         "cors": "^2.8.5",
+        "cross-env": "^10.1.0",
         "dotenv": "^16.4.5",
         "express": "^4.21.1",
         "express-rate-limit": "^8.1.0",

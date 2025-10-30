@@ -4,6 +4,7 @@ require('winston-cloudwatch');
 const path = require('path');
 const fs = require('fs');
 require('dotenv').config();
+const environment = require('../config/env.config')
 
 const logDir = path.join(__dirname, '../logs');
 if (!fs.existsSync(logDir)) fs.mkdirSync(logDir);
@@ -36,13 +37,13 @@ const errorFile = new winston.transports.File({
 const transports = [dailyRotateFile, errorFile];
 
 // 🧠 Add CloudWatch transport only in production
-if (process.env.NODE_ENV === 'production') {
+if (environment.mode === 'production') {
     const WinstonCloudWatch = require('winston-cloudwatch');
     transports.push(
         new WinstonCloudWatch({
-            logGroupName: process.env.CLOUDWATCH_GROUP || 'crm-app-logs',
-            logStreamName: process.env.CLOUDWATCH_STREAM || 'backend-stream',
-            awsRegion: process.env.AWS_REGION || 'us-east-1',
+            logGroupName: environment.CLOUDWATCH_GROUP || 'crm-app-logs',
+            logStreamName: environment.CLOUDWATCH_STREAM || 'backend-stream',
+            awsRegion: environment.AWS_REGION || 'us-east-1',
             jsonMessage: true,
             retentionInDays: 14,
         })
@@ -50,13 +51,13 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 const logger = winston.createLogger({
-    level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
-    format: process.env.NODE_ENV === 'development' ? devFormat : prodFormat,
-    defaultMeta: { service: 'crm-backend', env: process.env.NODE_ENV },
+    level: environment.mode === 'development' ? 'debug' : 'info',
+    format: environment.mode === 'development' ? devFormat : prodFormat,
+    defaultMeta: { service: 'crm-backend', env: environment.mode },
     transports,
 });
 
-if (process.env.NODE_ENV === 'development') {
+if (environment.mode === 'development') {
     logger.add(new winston.transports.Console({ format: devFormat }));
 }
 
