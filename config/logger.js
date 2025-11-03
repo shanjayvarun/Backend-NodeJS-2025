@@ -57,6 +57,12 @@ const logger = winston.createLogger({
     transports,
 });
 
+logger.add(
+  new winston.transports.Console({
+    format: environment.mode === 'development' ? devFormat : prodFormat,
+  })
+);
+
 if (environment.mode === 'development') {
     logger.add(new winston.transports.Console({ format: devFormat }));
 }
