@@ -8,7 +8,7 @@ dotenv.config({ path: path.resolve(process.cwd(), envFile) });
 
 const environment = {
     mode: env,
-    port: process.env.PORT,
+    port: process.env.PORT || 5000,
     version: process.env.VERSION,
     subdomain: process.env.SUBDOMAIN,
     mongoUri: process.env.MONGO_URI,
