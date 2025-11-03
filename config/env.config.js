@@ -33,4 +33,6 @@ const environment = {
     debug: process.env.DEBUG
 };
 
+console.log("🧭 Loaded ENV from:", `.env.${process.env.NODE_ENV}`);
+
 module.exports = environment;
