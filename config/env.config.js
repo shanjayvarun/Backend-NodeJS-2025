@@ -1,13 +1,11 @@
 const path = require('path');
 const dotenv = require('dotenv');
-
-const env = process.env.NODE_ENV || 'development';
 const envFile = `.env.${env}`;
 
 dotenv.config({ path: path.resolve(process.cwd(), envFile) });
 
 const environment = {
-    mode: env,
+    mode:  process.env.NODE_ENV,
     port: process.env.PORT || 5000,
     version: process.env.VERSION,
     subdomain: process.env.SUBDOMAIN,
