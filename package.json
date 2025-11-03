@@ -1,5 +1,5 @@
 {
-    "name": "nodejs-learning",
+    "name": "crm",
     "version": "1.0.0",
     "description": "A Node.js API project with MongoDB, following a modular structure.",
     "main": "server.js",
