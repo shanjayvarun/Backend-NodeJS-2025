@@ -31,4 +31,6 @@ const environment = {
     },
 };
 
+console.log(`✅ ENV Loaded. Mode: ${environment.mode}`);
+
 module.exports = environment;
