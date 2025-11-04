@@ -1,8 +1,7 @@
 const path = require('path');
 const dotenv = require('dotenv');
-const envFile = `.env.${process.env.NODE_ENV}`;
 
-dotenv.config({ path: path.resolve(process.cwd(), envFile) });
+dotenv.config({ path: path.resolve(process.cwd(), `.env`) });
 
 const environment = {
     mode:  process.env.NODE_ENV,
@@ -30,9 +29,6 @@ const environment = {
         group: process.env.CLOUDWATCH_GROUP,
         stream: process.env.CLOUDWATCH_STREAM
     },
-    debug: process.env.DEBUG
 };
-
-console.log("🧭 Loaded ENV from:", `.env.${process.env.NODE_ENV}`);
 
 module.exports = environment;
