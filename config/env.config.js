@@ -1,15 +1,15 @@
 const path = require('path');
 const dotenv = require('dotenv');
 
-let envFile = '.env';
+let envFile = '';
 
 if (process.env.NODE_ENV === 'staging') {
     envFile = '.env.staging';
-} else if (process.env.NODE_ENV === 'development') {
-    envFile = '.env.development';
+} else if (process.env.NODE_ENV === 'production') {
+    envFile = '.env';
 }
 
-dotenv.config({ path: path.resolve(process.cwd(), envFile) });
+dotenv.config({ path: path.resolve(process.cwd(), envFile), override: true });
 
 console.log(`🔐 ENV Loaded from: ${envFile}`);
 console.log(`🌍 Mode: ${process.env.NODE_ENV || 'production'}`);
