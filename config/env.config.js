@@ -1,10 +1,21 @@
 const path = require('path');
 const dotenv = require('dotenv');
 
-dotenv.config({ path: path.resolve(process.cwd(), `.env`) });
+let envFile = '.env';
 
-const environment = {
-    mode:  process.env.NODE_ENV,
+if (process.env.NODE_ENV === 'staging') {
+    envFile = '.env.staging';
+} else if (process.env.NODE_ENV === 'development') {
+    envFile = '.env.development';
+}
+
+dotenv.config({ path: path.resolve(process.cwd(), envFile) });
+
+console.log(`🔐 ENV Loaded from: ${envFile}`);
+console.log(`🌍 Mode: ${process.env.NODE_ENV || 'production'}`);
+
+module.exports = {
+    mode: process.env.NODE_ENV,
     port: process.env.PORT,
     version: process.env.VERSION,
     subdomain: process.env.SUBDOMAIN,
@@ -28,9 +39,5 @@ const environment = {
     cloudwatch: {
         group: process.env.CLOUDWATCH_GROUP,
         stream: process.env.CLOUDWATCH_STREAM
-    },
+    }
 };
-
-console.log(`✅ ENV Loaded. Mode: ${environment.mode}`);
-
-module.exports = environment;
