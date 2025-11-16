@@ -9,5 +9,6 @@ router.get("/get-files", validateUserToken, utilityController.getFiles);
 router.get("/download-file", validateUserToken, utilityController.downloadFile);
 router.get("/weather", validateUserToken, validateCity, utilityController.weatherDetails);
 router.get("/countries", validateUserToken, utilityController.getCountries)
+router.get("/health", utilityController.getHealth)
 
 module.exports = router;

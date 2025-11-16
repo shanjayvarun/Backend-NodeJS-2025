@@ -6,6 +6,7 @@ const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { GetObjectCommand } = require('@aws-sdk/client-s3');
 require('dotenv').config();
 const weatherService = require('../services/weather.service');
+const mongoose = require('mongoose');
 
 exports.uploadFile = (req, res) => {
     upload.single('file')(req, res, (error) => {
@@ -72,6 +73,40 @@ exports.getCountries = async (req, res) => {
         const countries = await getCountries(skip, limit);
         if (!countries) return sendError(res, 404, 'Countries not found')
         return sendSuccessGet(res, countries, 'Countries fetched successfullly')
+    } catch (error) {
+        return sendError(res, 500, error.message);
+    }
+}
+
+exports.getHealth = async (req, res) => {
+    try {
+        const timestamp = new Date();
+        const uptime = process.uptime();
+        const dbState = mongoose.connection.readyState === 1;
+        let dbPing = "fail";
+        let dbLatency = null;
+        try {
+            const start = Date.now();
+            await mongoose.connection.db.admin().ping();
+            dbPing = "ok";
+            dbLatency = Date.now() - start;
+        } catch { }
+        const health = {
+            status: dbPing === "ok" ? "ok" : "error",
+            timestamp,
+            uptime,
+            app: {
+                version: process.env.APP_VERSION || "1.0.0",
+                environment: process.env.NODE_ENV || "development",
+                memory: process.memoryUsage()
+            },
+            database: {
+                connected: dbState,
+                ping: dbPing,
+                latencyMs: dbLatency
+            },
+        };
+        return sendSuccessGet(res, health, 'Health Report fetched successfullly')
     } catch (error) {
         return sendError(res, 500, error.message);
     }
