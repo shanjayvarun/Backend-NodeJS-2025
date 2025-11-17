@@ -2,7 +2,7 @@ const rateLimit = require('express-rate-limit');
 
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 min
-    max: 3, // limit each IP to 3 requests per 15 minutes
+    max: 5, // limit each IP to 3 requests per 15 minutes
     message: {
         status: false,
         code: 429,
