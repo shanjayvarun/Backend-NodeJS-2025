@@ -20,7 +20,7 @@ jobs:
 
     - name: Configure SSH
       run: |
-        echo "Host ec2
+        echo "Host ec2"
             HostName ${{ secrets.EC2_HOST }}
             User ${{ secrets.EC2_USER }}
             IdentityFile ~/.ssh/deploy_key
