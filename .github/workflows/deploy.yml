@@ -2,36 +2,29 @@ name: Deploy to EC2
 
 on:
   push:
-    branches: [ "crm" ]
+    branches: ["crm"]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout code
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    # Create SSH key
-    - name: Add SSH key
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
-        chmod 600 ~/.ssh/deploy_key
+      - name: Add SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
 
-    # Create SSH config properly
-    - name: Configure SSH
-      run: |
-        cat <<EOF > ~/.ssh/config
-Host ec2
-  HostName ${{ secrets.EC2_HOST }}
-  User ${{ secrets.EC2_USER }}
-  IdentityFile ~/.ssh/deploy_key
-  StrictHostKeyChecking no
-EOF
+      - name: Configure SSH
+        run: |
+          printf "Host ec2\n" > ~/.ssh/config
+          printf "  HostName %s\n" "${{ secrets.EC2_HOST }}" >> ~/.ssh/config
+          printf "  User %s\n" "${{ secrets.EC2_USER }}" >> ~/.ssh/config
+          printf "  IdentityFile ~/.ssh/deploy_key\n" >> ~/.ssh/config
+          printf "  StrictHostKeyChecking no\n" >> ~/.ssh/config
 
-    # Run deployment script on EC2
-    - name: Run Deployment Script
-      run: |
-        ssh ec2 "bash /home/ubuntu/deploy.sh"
+      - name: Run Deployment Script
+        run: ssh ec2 "bash /home/ubuntu/deploy.sh"
