@@ -9,23 +9,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    # Checkout code
     - name: Checkout code
       uses: actions/checkout@v3
 
+    # Create SSH key
     - name: Add SSH key
       run: |
         mkdir -p ~/.ssh
         echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
         chmod 600 ~/.ssh/deploy_key
 
+    # Create SSH config properly
     - name: Configure SSH
       run: |
-        echo "Host ec2"
-            HostName ${{ secrets.EC2_HOST }}
-            User ${{ secrets.EC2_USER }}
-            IdentityFile ~/.ssh/deploy_key
-            StrictHostKeyChecking no" > ~/.ssh/config
+        cat <<EOF > ~/.ssh/config
+Host ec2
+  HostName ${{ secrets.EC2_HOST }}
+  User ${{ secrets.EC2_USER }}
+  IdentityFile ~/.ssh/deploy_key
+  StrictHostKeyChecking no
+EOF
 
+    # Run deployment script on EC2
     - name: Run Deployment Script
       run: |
         ssh ec2 "bash /home/ubuntu/deploy.sh"
