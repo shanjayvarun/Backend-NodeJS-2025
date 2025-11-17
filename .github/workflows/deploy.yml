@@ -23,7 +23,7 @@ jobs:
         echo "Host ec2
             HostName ${{ secrets.EC2_HOST }}
             User ${{ secrets.EC2_USER }}
-            IdentityFile ~/.ssh/deploy_key
+            IdentityFile ~/.ssh/ec2_deploy_key
             StrictHostKeyChecking no" > ~/.ssh/config
 
     - name: Run Deployment Script

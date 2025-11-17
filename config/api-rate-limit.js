@@ -10,8 +10,6 @@ const loginLimiter = rateLimit({
     },
     standardHeaders: true,
     legacyHeaders: false,
-    standardHeaders: true, // Return rate limit info in headers
-    legacyHeaders: false,  // Disable the `X-RateLimit-*` headers
 });
 
 const registerLimiter = rateLimit({
@@ -24,8 +22,6 @@ const registerLimiter = rateLimit({
     },
     standardHeaders: true,
     legacyHeaders: false,
-    standardHeaders: true, // Return rate limit info in headers
-    legacyHeaders: false,  // Disable the `X-RateLimit-*` headers
 });
 
 module.exports = { loginLimiter, registerLimiter }
