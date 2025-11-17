@@ -9,11 +9,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Configure SSH so the runner can connect to EC2
       - name: Configure SSH Key
         run: |
           mkdir -p ~/.ssh
@@ -21,10 +19,9 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
-      # 3. Deployment commands run inside EC2
       - name: Deploy to EC2
         run: |
-          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             echo "---- Navigating to project directory ----"
             cd /home/ubuntu/Backend-NodeJS-2025
 
@@ -33,10 +30,10 @@ jobs:
             git reset --hard origin/crm
 
             echo "---- Applying staging environment variables ----"
-            .env.staging
+            cp .env.staging .env
 
             echo "---- Installing dependencies ----"
-            npm install
+            npm install --production
 
             echo "---- Reloading PM2 process (zero downtime) ----"
             pm2 reload crms-api-staging --update-env
