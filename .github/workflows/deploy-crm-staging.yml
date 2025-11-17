@@ -1,0 +1,39 @@
+name: Deploy CRM Staging
+
+on:
+  push:
+    branches: ["crm"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to EC2 (Staging)
+        run: |
+          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            cd /home/ubuntu/Backend-NodeJS-2025
+
+            echo "Pulling latest code from crm branch..."
+            git fetch origin crm
+            git reset --hard origin/crm
+
+            echo "Updating env file..."
+            cp .env.staging .env
+
+            echo "Installing dependencies..."
+            npm install --production
+
+            echo "Reloading PM2 process..."
+            pm2 reload crms-api-staging --update-env
+          EOF
