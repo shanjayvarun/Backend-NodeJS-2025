@@ -2,7 +2,7 @@ name: Deploy CRM Production
 
 on:
   push:
-    branches: ["crm"]
+    branches: ["crm-prod"]
 
 jobs:
   deploy:
@@ -26,10 +26,10 @@ jobs:
             cd /home/ubuntu/Backend-NodeJS-2025
 
             echo "---- Pulling latest code from crm branch ----"
-            git fetch origin crm
-            git reset --hard origin/crm
+            git fetch origin crm-prod
+            git reset --hard origin/crm-prod
 
-            echo "---- Applying staging environment variables ----"
+            echo "---- Applying production environment variables ----"
             cp .env .env
 
             echo "---- Installing dependencies ----"
