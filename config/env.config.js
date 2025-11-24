@@ -5,14 +5,13 @@ let envFile = '';
 
 if (process.env.NODE_ENV === 'staging') {
     envFile = '.env.staging';
-} else if (process.env.NODE_ENV === 'production') {
+} else {
     envFile = '.env';
 }
 
 dotenv.config({ path: path.resolve(process.cwd(), envFile), override: true });
 
 console.log(`🔐 ENV Loaded from: ${envFile}`);
-console.log(`🌍 Mode: ${process.env.NODE_ENV || 'production'}`);
 
 module.exports = {
     mode: process.env.NODE_ENV,
