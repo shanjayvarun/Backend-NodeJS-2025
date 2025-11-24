@@ -4,9 +4,9 @@ const { s3, s3params, listS3Files } = require("../utility/s3");
 const { getCountries } = require("../utility/utility");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { GetObjectCommand } = require('@aws-sdk/client-s3');
-require('dotenv').config();
 const weatherService = require('../services/weather.service');
 const mongoose = require('mongoose');
+const environment = require('../../config/env.config')
 
 exports.uploadFile = (req, res) => {
     upload.single('file')(req, res, (error) => {
@@ -81,7 +81,6 @@ exports.getCountries = async (req, res) => {
 exports.getHealth = async (req, res) => {
     try {
         const timestamp = new Date();
-        const uptime = process.uptime();
         const dbState = mongoose.connection.readyState === 1;
         let dbPing = "fail";
         let dbLatency = null;
@@ -94,10 +93,9 @@ exports.getHealth = async (req, res) => {
         const health = {
             status: dbPing === "ok" ? "ok" : "error",
             timestamp,
-            uptime,
             app: {
-                version: process.env.APP_VERSION || "1.0.0",
-                environment: process.env.NODE_ENV || "development",
+                version: environment.version || "",
+                environment: environment.mode || "",
                 memory: process.memoryUsage()
             },
             database: {
