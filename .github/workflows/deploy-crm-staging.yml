@@ -9,11 +9,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout source
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Setup SSH
       - name: Prepare SSH
         run: |
           mkdir -p ~/.ssh
@@ -21,7 +19,6 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H "${{ secrets.EC2_STAGING_HOST }}" >> ~/.ssh/known_hosts
 
-      # 3. Version tagging (simple)
       - name: Auto Version Tagging
         id: tag
         run: |
@@ -30,7 +27,6 @@ jobs:
           git push origin "${TAG}"
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
-      # 4. Deploy with rollback
       - name: Deploy to EC2 (Zero downtime + Rollback)
         run: |
           ssh ${{ secrets.EC2_STAGING_USER }}@${{ secrets.EC2_STAGING_HOST }} << 'EOF'
@@ -78,7 +74,3 @@ jobs:
 
             echo "---- Deployment Success ----"
           EOF
-
-      # 5. Print deployed version
-      # - name: Print Deployed Version
-      #   run: echo "Deployed Tag: ${{ steps.tag.outputs.tag }}"
