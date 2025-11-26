@@ -27,50 +27,64 @@ jobs:
           git push origin "${TAG}"
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
-      - name: Deploy to EC2 (Zero downtime + Rollback)
+      - name: Deploy to EC2 (Blue-Green)
         run: |
           ssh ${{ secrets.EC2_STAGING_USER }}@${{ secrets.EC2_STAGING_HOST }} << 'EOF'
             set -e
 
-            cd /home/ubuntu/Backend-NodeJS-2025
+            BASE=/home/ubuntu/Backend-NodeJS-2025
 
-            echo "---- Saving current commit for rollback ----"
-            PREV_COMMIT=$(git rev-parse HEAD)
-
-            echo "---- Pulling latest code ----"
-            git fetch origin crm
-            git reset --hard origin/crm
-
-            echo "---- Applying staging environment ----"
-            cp .env.staging .env
-
-            echo "---- Installing dependencies ----"
-            npm install --production
-
-            echo "---- Reloading PM2 ----"
-            if ! pm2 reload crms-api-staging --update-env; then
-              echo "PM2 reload FAILED — rolling back..."
-              git reset --hard "$PREV_COMMIT"
-              npm install --production
-              pm2 restart crms-api-staging --update-env
-              exit 1
+            echo "---- Detecting CURRENT live environment ----"
+            if [ "$(readlink $BASE/current)" = "$BASE/blue" ]; then
+              TARGET="green"
+              LIVE="blue"
+            else
+              TARGET="blue"
+              LIVE="green"
             fi
 
-            echo "---- Running Health Check ----"
+            echo "Live: $LIVE"
+            echo "Deploying to: $TARGET"
+
+            DEPLOY_DIR="$BASE/$TARGET"
+
+            echo "---- Saving previous commit for rollback ----"
+            PREV=$(git -C $BASE/$LIVE rev-parse HEAD)
+
+            echo "---- Updating code in $TARGET ----"
+            git -C $DEPLOY_DIR fetch origin crm
+            git -C $DEPLOY_DIR reset --hard origin/crm
+
+            echo "---- Applying environment (.env.staging) ----"
+            cp $BASE/.env.staging $DEPLOY_DIR/.env
+
+            echo "---- Installing dependencies ----"
+            npm --prefix $DEPLOY_DIR install --production
+
+            echo "---- Restarting PM2 process for $TARGET ----"
+            pm2 restart crms-api-staging-$TARGET || pm2 start $DEPLOY_DIR/server.js --name crms-api-staging-$TARGET
+
+            echo "---- Running health checks ----"
             for i in {1..5}; do
               STATUS=$(curl -k -s -o /dev/null -w "%{http_code}" https://crms-api-dev.duckdns.org/api/v1/utility/health)
-              echo "Health Try $i = $STATUS"
+              echo "Attempt $i: $STATUS"
               [ "$STATUS" = "200" ] && break
               sleep 5
             done
 
             if [ "$STATUS" != "200" ]; then
-              echo "Health check FAILED — rolling back..."
-              git reset --hard "$PREV_COMMIT"
-              npm install --production
-              pm2 restart crms-api-staging --update-env
+              echo "❌ Health check failed — rolling back to $LIVE"
+              git -C $DEPLOY_DIR reset --hard $PREV
+              pm2 restart crms-api-staging-$LIVE
               exit 1
             fi
 
-            echo "---- Deployment Success ----"
+            echo "---- Health OK — switching symlink to $TARGET ----"
+            ln -sfn $DEPLOY_DIR $BASE/current
+
+            echo "---- Reloading Nginx if installed ----"
+            sudo systemctl reload nginx || true
+
+            echo "🎉 Blue–Green Deployment SUCCESS ($TARGET is now LIVE) ----"
           EOF
+
