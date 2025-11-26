@@ -1,4 +1,46 @@
-name: Deploy CRM Staging
+# name: Deploy CRM Staging
+
+# on:
+#   push:
+#     branches: ["crm"]
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
+
+#       - name: Configure SSH Key
+#         run: |
+#           mkdir -p ~/.ssh
+#           echo "${{ secrets.EC2_STAGING_SSH_KEY }}" > ~/.ssh/id_rsa
+#           chmod 600 ~/.ssh/id_rsa
+#           ssh-keyscan -H ${{ secrets.EC2_STAGING_HOST }} >> ~/.ssh/known_hosts
+
+#       - name: Deploy to EC2
+#         run: |
+#           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_STAGING_USER }}@${{ secrets.EC2_STAGING_HOST }} << 'EOF'
+#             echo "---- Navigating to project directory ----"
+#             cd /home/ubuntu/Backend-NodeJS-2025
+
+#             echo "---- Pulling latest code from crm branch ----"
+#             git fetch origin crm
+#             git reset --hard origin/crm
+
+#             echo "---- Applying staging environment variables ----"
+#             cp .env.staging .env
+
+#             echo "---- Installing dependencies ----"
+#             npm install --production
+
+#             echo "---- Reloading PM2 process (zero downtime) ----"
+#             pm2 reload crms-api-staging --update-env
+
+#             echo "---- Deployment finished successfully ----"
+#           EOF
+# name: Deploy CRM - Staging
 
 on:
   push:
@@ -9,34 +51,76 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      # 1. Checkout source
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Configure SSH Key
+      # 2. Setup SSH
+      - name: Prepare SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_STAGING_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.EC2_STAGING_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H "${{ secrets.EC2_STAGING_HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Deploy to EC2
+      # 3. Version tagging (simple)
+      - name: Auto Version Tagging
+        id: tag
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_STAGING_USER }}@${{ secrets.EC2_STAGING_HOST }} << 'EOF'
-            echo "---- Navigating to project directory ----"
+          TAG="staging-$(date +"%Y%m%d-%H%M%S")"
+          git tag "${TAG}"
+          git push origin "${TAG}"
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+
+      # 4. Deploy with rollback
+      - name: Deploy to EC2 (Zero downtime + Rollback)
+        run: |
+          ssh ${{ secrets.EC2_STAGING_USER }}@${{ secrets.EC2_STAGING_HOST }} << 'EOF'
+            set -e
+
             cd /home/ubuntu/Backend-NodeJS-2025
 
-            echo "---- Pulling latest code from crm branch ----"
+            echo "---- Saving current commit for rollback ----"
+            PREV_COMMIT=$(git rev-parse HEAD)
+
+            echo "---- Pulling latest code ----"
             git fetch origin crm
             git reset --hard origin/crm
 
-            echo "---- Applying staging environment variables ----"
+            echo "---- Applying staging environment ----"
             cp .env.staging .env
 
             echo "---- Installing dependencies ----"
             npm install --production
 
-            echo "---- Reloading PM2 process (zero downtime) ----"
-            pm2 reload crms-api-staging --update-env
+            echo "---- Reloading PM2 ----"
+            if ! pm2 reload crms-api-staging --update-env; then
+              echo "PM2 reload FAILED — rolling back..."
+              git reset --hard "$PREV_COMMIT"
+              npm install --production
+              pm2 restart crms-api-staging --update-env
+              exit 1
+            fi
 
-            echo "---- Deployment finished successfully ----"
+            echo "---- Running Health Check ----"
+            for i in {1..5}; do
+              STATUS=$(curl -k -s -o /dev/null -w "%{http_code}" https://crms-api-dev.duckdns.org/utility/health)
+              echo "Health Try $i = $STATUS"
+              [ "$STATUS" = "200" ] && break
+              sleep 5
+            done
+
+            if [ "$STATUS" != "200" ]; then
+              echo "Health check FAILED — rolling back..."
+              git reset --hard "$PREV_COMMIT"
+              npm install --production
+              pm2 restart crms-api-staging --update-env
+              exit 1
+            fi
+
+            echo "---- Deployment Success ----"
           EOF
+
+      # 5. Print deployed version
+      # - name: Print Deployed Version
+      #   run: echo "Deployed Tag: ${{ steps.tag.outputs.tag }}"
