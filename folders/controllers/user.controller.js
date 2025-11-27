@@ -24,7 +24,8 @@ exports.loginUser = (req, res, next) => {
         id: user._id,
         name: user.name,
         role: user.role,
-        lastLoginAt: user.lastLoginAt
+        lastLoginAt: user.lastLoginAt,
+        test: 'shanjay'
       }
     }, 'User logged in successfully');
   })(req, res, next);
