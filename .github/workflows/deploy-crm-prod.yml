@@ -1,4 +1,4 @@
-name: Deploy CRM Production
+name: Deploy CRM prod
 
 on:
   push:
@@ -33,11 +33,11 @@ jobs:
             git fetch origin crm-prod
             git reset --hard origin/crm-prod
 
-            echo "---- Applying production environment variables ----"
+            echo "---- Applying prod environment variables ----"
             cp .env .env
 
             echo "---- Installing dependencies ----"
-            npm install --production
+            npm install --prod
 
             echo "---- Reloading PM2 process (zero downtime) ----"
             pm2 reload crm-api --update-env
@@ -53,7 +53,7 @@ jobs:
             if [ "$STATUS" != "200" ]; then
               echo "Health check FAILED — rolling back..."
               git reset --hard "$PREV_COMMIT"
-              npm install --production
+              npm install --prod
               pm2 restart crms-api-staging --update-env
               exit 1
             fi

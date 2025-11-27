@@ -26,7 +26,7 @@ const consoleFormat = combine(
   })
 );
 
-// 🧩 Production format (for CloudWatch and files)
+// 🧩 prod format (for CloudWatch and files)
 const prodFormat = combine(timestamp(), json());
 
 // 🔄 Daily rotate log files
@@ -47,8 +47,8 @@ const errorFile = new winston.transports.File({
 
 const transports = [dailyRotateFile, errorFile];
 
-// ☁️ CloudWatch (production only)
-if (environment.mode === 'production') {
+// ☁️ CloudWatch (prod only)
+if (environment.mode === 'prod') {
   const WinstonCloudWatch = require('winston-cloudwatch');
   transports.push(
     new WinstonCloudWatch({
