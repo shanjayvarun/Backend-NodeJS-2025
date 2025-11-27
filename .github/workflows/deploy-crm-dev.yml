@@ -12,18 +12,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Create Git Tag
+      - name: Auto Version Tagging
+        id: tag
         run: |
-          TIMESTAMP=$(date +"%Y.%m.%d-%H%M")
-          TAG="dev-${TIMESTAMP}"
-
-          echo "Creating tag: $TAG"
-
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-
-          git tag "$TAG"
-          git push origin "$TAG"
+          TAG="dev-$(date +"%Y%m%d-%H%M%S")"
+          git tag "${TAG}"
+          git push origin "${TAG}"
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
       - name: Prepare SSH
         run: |
@@ -63,49 +58,24 @@ jobs:
             pm2 reload crms-dev --update-env
           EOF
 
-      # =========================================
-      #         CLEAN SIMPLIFIED HEALTH CHECK
-      # =========================================
       - name: Health Check API
-        id: health
         run: |
-          ssh ${{ secrets.EC2_STAGING_USER }}@${{ secrets.EC2_STAGING_HOST }} << 'EOF'
-            cd /home/ubuntu/crms-backend
-
-            STATUS=0
             for i in {1..5}; do
-              STATUS=$(curl -k -s -o /dev/null -w "%{http_code}" https://crms-api-dev.duckdns.org/v2/utility/health)
-              echo "Health Try $i: $STATUS"
+              STATUS=$(curl -k -s -o /dev/null -w "%{http_code}" https://crms-api-dev.duckdns.org/utility/health)
+              echo "Health Try $i = $STATUS"
               [ "$STATUS" = "200" ] && break
               sleep 5
             done
 
-            echo $STATUS > HEALTH_STATUS
-          EOF
-
-      # =========================================
-      #        CLEAN SIMPLIFIED ROLLBACK
-      # =========================================
       - name: Rollback on Failure
-        if: always()
         run: |
-          HEALTH=$(ssh ${{ secrets.EC2_STAGING_USER }}@${{ secrets.EC2_STAGING_HOST }} "cat /home/ubuntu/crms-backend/HEALTH_STATUS")
-
-          if [ "$HEALTH" != "200" ]; then
-            echo "❌ Health check failed — rolling back..."
-
-            ssh ${{ secrets.EC2_STAGING_USER }}@${{ secrets.EC2_STAGING_HOST }} << 'EOF'
-              cd /home/ubuntu/crms-backend
-
-              PREV_COMMIT=$(cat PREV_COMMIT_FILE)
+            if [ "$STATUS" != "200" ]; then
+              echo "Health check FAILED — rolling back..."
               git reset --hard "$PREV_COMMIT"
-
-              npm install --dev
-              pm2 restart crms-dev --update-env
-            EOF
-
-            exit 1
-          fi
+              npm install --production
+              pm2 restart crms-api-staging --update-env
+              exit 1
+            fi
 
       - name: Deployment Successful
         if: success()
