@@ -82,6 +82,8 @@ exports.getHealth = async (req, res) => {
     try {
         const timestamp = new Date();
         const dbState = mongoose.connection.readyState === 1;
+        const dbUri = mongoose.connection._connectionString || "";
+        const maskedDbUri = dbUri.replace(/\/\/(.*)@/, '//***:***@');
         let dbPing = "fail";
         let dbLatency = null;
         try {
@@ -93,19 +95,25 @@ exports.getHealth = async (req, res) => {
         const health = {
             status: dbPing === "ok" ? "ok" : "error",
             timestamp,
+            request: {
+                url: req.originalUrl,
+                method: req.method
+            },
             app: {
                 version: environment.version || "",
                 environment: environment.mode || "",
-                memory: process.memoryUsage()
+                memory: process.memoryUsage(),
             },
             database: {
                 connected: dbState,
                 ping: dbPing,
-                latencyMs: dbLatency
+                latencyMs: dbLatency,
+                connectionString: maskedDbUri
             },
         };
-        return sendSuccessGet(res, health, 'Health Report fetched successfullly')
+        return sendSuccessGet(res, health, 'Health Report fetched successfully');
     } catch (error) {
         return sendError(res, 500, error.message);
     }
-}
+};
+
