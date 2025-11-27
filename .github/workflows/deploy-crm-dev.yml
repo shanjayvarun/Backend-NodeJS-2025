@@ -87,6 +87,7 @@ jobs:
 
           if [ "$HEALTH" != "200" ]; then
             echo "❌ Health check failed — rolling back..."
+
             ssh ${{ secrets.EC2_STAGING_USER }}@${{ secrets.EC2_STAGING_HOST }} << 'EOF'
               cd /home/ubuntu/crms-backend
               PREV_COMMIT=$(cat PREV_COMMIT_FILE)
@@ -94,6 +95,7 @@ jobs:
               npm install --dev
               pm2 restart crms-dev --update-env
             EOF
+
             exit 1
           fi
 
