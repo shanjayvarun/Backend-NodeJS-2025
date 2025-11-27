@@ -1,4 +1,4 @@
-name: Deploy CRM dev
+name: Deploy CRM Dev
 
 on:
   push:
@@ -9,11 +9,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout source
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Setup SSH
+      - name: Create Git Tag
+        run: |
+          TIMESTAMP=$(date +"%Y.%m.%d-%H%M")
+          TAG="dev-${TIMESTAMP}"
+
+          echo "Creating tag: $TAG"
+
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git tag "$TAG"
+          git push origin "$TAG"
+
       - name: Prepare SSH
         run: |
           mkdir -p ~/.ssh
@@ -21,42 +32,71 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_STAGING_HOST }} >> ~/.ssh/known_hosts
 
-      # 3. Version tagging (simple)
-      - name: Auto Version Tagging
-        id: tag
+      - name: Git Update CRM DEV Branch
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_STAGING_USER }}@${{ secrets.EC2_STAGING_HOST }} << 'EOF'
-            echo "---- Navigating to project directory ----"
+          ssh ${{ secrets.EC2_STAGING_USER }}@${{ secrets.EC2_STAGING_HOST }} << 'EOF'
             cd /home/ubuntu/crms-backend
-
-            echo "---- Pulling latest code from crm branch ----"
+            PREV_COMMIT=$(git rev-parse HEAD)
             git fetch origin crm-dev
             git reset --hard origin/crm-dev
+            echo "$PREV_COMMIT" > PREV_COMMIT_FILE
+          EOF
 
-            echo "---- Applying dev environment variables ----"
-            cp .env.dev .env.dev
+      - name: Apply Dev Environment Variables
+        run: |
+          ssh ${{ secrets.EC2_STAGING_USER }}@${{ secrets.EC2_STAGING_HOST }} << 'EOF'
+            cd /home/ubuntu/crms-backend
+            cp .env.dev .env
+          EOF
 
-            echo "---- Installing dependencies ----"
+      - name: Install Dependencies
+        run: |
+          ssh ${{ secrets.EC2_STAGING_USER }}@${{ secrets.EC2_STAGING_HOST }} << 'EOF'
+            cd /home/ubuntu/crms-backend
             npm install --dev
+          EOF
 
-            echo "---- Reloading PM2 process (zero downtime) ----"
+      - name: Reload PM2 Process
+        run: |
+          ssh ${{ secrets.EC2_STAGING_USER }}@${{ secrets.EC2_STAGING_HOST }} << 'EOF'
+            cd /home/ubuntu/crms-backend
             pm2 reload crms-dev --update-env
+          EOF
 
-            echo "---- Running Health Check ----"
+      - name: Health Check API
+        id: health
+        run: |
+          ssh ${{ secrets.EC2_STAGING_USER }}@${{ secrets.EC2_STAGING_HOST }} << 'EOF'
+            cd /home/ubuntu/crms-backend
+
+            STATUS=0
             for i in {1..5}; do
               STATUS=$(curl -k -s -o /dev/null -w "%{http_code}" https://crms-api-dev.duckdns.org/v2/utility/health)
-              echo "Health Try $i = $STATUS"
+              echo "Health Try $i: $STATUS"
               [ "$STATUS" = "200" ] && break
               sleep 5
             done
 
-            if [ "$STATUS" != "200" ]; then
-              echo "Health check FAILED — rolling back..."
+            echo $STATUS > HEALTH_STATUS_FILE
+          EOF
+
+      - name: Rollback on Failure
+        if: always()
+        run: |
+          HEALTH=$(ssh ${{ secrets.EC2_STAGING_USER }}@${{ secrets.EC2_STAGING_HOST }} "cat /home/ubuntu/crms-backend/HEALTH_STATUS_FILE")
+
+          if [ "$HEALTH" != "200" ]; then
+            echo "❌ Health check failed — rolling back..."
+            ssh ${{ secrets.EC2_STAGING_USER }}@${{ secrets.EC2_STAGING_HOST }} << 'EOF'
+              cd /home/ubuntu/crms-backend
+              PREV_COMMIT=$(cat PREV_COMMIT_FILE)
               git reset --hard "$PREV_COMMIT"
               npm install --dev
               pm2 restart crms-dev --update-env
-              exit 1
-            fi
+            EOF
+            exit 1
+          fi
 
-            echo "---- Deployment Success ----"
-          EOF
+      - name: Deployment Successful
+        if: success()
+        run: echo "🎉 CRM Dev Deployment Completed Successfully!"
