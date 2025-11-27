@@ -61,7 +61,7 @@ jobs:
       - name: Health Check API
         run: |
             for i in {1..5}; do
-              STATUS=$(curl -k -s -o /dev/null -w "%{http_code}" https://crms-api-dev.duckdns.org/utility/health)
+              STATUS=$(curl -k -s -o /dev/null -w "%{http_code}" https://crms-api-dev.duckdns.org/v2/utility/health)
               echo "Health Try $i = $STATUS"
               [ "$STATUS" = "200" ] && break
               sleep 5
