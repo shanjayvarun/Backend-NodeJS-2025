@@ -1,13 +1,13 @@
 const path = require('path');
 const dotenv = require('dotenv');
 
-let envFile = '.env';
+let envFile = '';
 
-// if (process.env.NODE_ENV === 'staging') {
-//     envFile = '.env.staging';
-// } else {
-//     envFile = '.env';
-// }
+if (process.env.NODE_ENV === 'prod') {
+    envFile = '.env.prod';
+} else {
+    envFile = '.env.dev';
+}
 
 dotenv.config({ path: path.resolve(process.cwd(), envFile), override: true });
 
