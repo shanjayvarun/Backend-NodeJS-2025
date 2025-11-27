@@ -9,17 +9,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      # 1. Checkout source
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Configure SSH Key
+      # 2. Setup SSH
+      - name: Prepare SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_PROD_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_PROD_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy to EC2
+      # 3. Version tagging (simple)
+      - name: Auto Version Tagging
+        id: tag
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_PROD_USER }}@${{ secrets.EC2_PROD_HOST }} << 'EOF'
             echo "---- Navigating to project directory ----"
@@ -38,5 +42,25 @@ jobs:
             echo "---- Reloading PM2 process (zero downtime) ----"
             pm2 reload crm-api --update-env
 
-            echo "---- Deployment finished successfully ----"
+            echo "---- Running Health Check ----"
+            for i in {1..5}; do
+              STATUS=$(curl -k -s -o /dev/null -w "%{http_code}" https://crms-api-dev.duckdns.org/utility/health)
+              echo "Health Try $i = $STATUS"
+              [ "$STATUS" = "200" ] && break
+              sleep 5
+            done
+
+            if [ "$STATUS" != "200" ]; then
+              echo "Health check FAILED — rolling back..."
+              git reset --hard "$PREV_COMMIT"
+              npm install --production
+              pm2 restart crms-api-staging --update-env
+              exit 1
+            fi
+
+            echo "---- Deployment Success ----"
           EOF
+
+      # 5. Print deployed version
+      # - name: Print Deployed Version
+      #   run: echo "Deployed Tag: ${{ steps.tag.outputs.tag }}"

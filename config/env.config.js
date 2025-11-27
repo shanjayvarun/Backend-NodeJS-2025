@@ -1,23 +1,22 @@
 const path = require('path');
 const dotenv = require('dotenv');
 
-let envFile = '';
+let envFile = '.env';
 
-if (process.env.NODE_ENV === 'staging') {
-    envFile = '.env.staging';
-} else {
-    envFile = '.env';
-}
+// if (process.env.NODE_ENV === 'staging') {
+//     envFile = '.env.staging';
+// } else {
+//     envFile = '.env';
+// }
 
 dotenv.config({ path: path.resolve(process.cwd(), envFile), override: true });
 
-console.log(`🔐 ENV Loaded from: ${envFile}`);
+console.log(`🔐 ENV FILENAME: ${envFile}`);
 
 module.exports = {
     mode: process.env.NODE_ENV,
     port: process.env.PORT,
     version: process.env.VERSION,
-    subdomain: process.env.SUBDOMAIN,
     mongoUri: process.env.MONGO_URI,
     jwt: {
         accessSecret: process.env.JWT_ACCESS_SECRET,
