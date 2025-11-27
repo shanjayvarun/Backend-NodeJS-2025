@@ -7,7 +7,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -58,9 +57,6 @@ jobs:
             pm2 reload crms-dev --update-env
           EOF
 
-      # ================================
-      # FIXED HEALTH CHECK (with output)
-      # ================================
       - name: Health Check API
         id: health
         run: |
@@ -70,29 +66,21 @@ jobs:
             [ "$STATUS" = "200" ] && break
             sleep 5
           done
-
           echo "status=${STATUS}" >> $GITHUB_OUTPUT
 
-      # ================================
-      # FIXED ROLLBACK USING SSH + OUTPUTS
-      # ================================
       - name: Rollback on Failure
         if: steps.health.outputs.status != '200'
         run: |
-          echo "❌ Health check FAILED — rolling back..."
-
+          echo "Health check FAILED — rolling back..."
           ssh ${{ secrets.EC2_STAGING_USER }}@${{ secrets.EC2_STAGING_HOST }} << 'EOF'
             cd /home/ubuntu/crms-backend
-
             PREV_COMMIT=$(cat PREV_COMMIT_FILE)
             git reset --hard "$PREV_COMMIT"
-
             npm install --production
             pm2 restart crms-dev --update-env
           EOF
-
           exit 1
 
       - name: Deployment Successful
         if: steps.health.outputs.status == '200'
-        run: echo "🎉 CRM Dev Deployment Completed Successfully!"
+        run: echo "CRM Dev Deployment Completed Successfully!"
