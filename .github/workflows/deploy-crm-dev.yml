@@ -63,6 +63,9 @@ jobs:
             pm2 reload crms-dev --update-env
           EOF
 
+      # =========================================
+      #         CLEAN SIMPLIFIED HEALTH CHECK
+      # =========================================
       - name: Health Check API
         id: health
         run: |
@@ -77,21 +80,26 @@ jobs:
               sleep 5
             done
 
-            echo $STATUS > HEALTH_STATUS_FILE
+            echo $STATUS > HEALTH_STATUS
           EOF
 
+      # =========================================
+      #        CLEAN SIMPLIFIED ROLLBACK
+      # =========================================
       - name: Rollback on Failure
         if: always()
         run: |
-          HEALTH=$(ssh ${{ secrets.EC2_STAGING_USER }}@${{ secrets.EC2_STAGING_HOST }} "cat /home/ubuntu/crms-backend/HEALTH_STATUS_FILE")
+          HEALTH=$(ssh ${{ secrets.EC2_STAGING_USER }}@${{ secrets.EC2_STAGING_HOST }} "cat /home/ubuntu/crms-backend/HEALTH_STATUS")
 
           if [ "$HEALTH" != "200" ]; then
             echo "❌ Health check failed — rolling back..."
 
             ssh ${{ secrets.EC2_STAGING_USER }}@${{ secrets.EC2_STAGING_HOST }} << 'EOF'
               cd /home/ubuntu/crms-backend
+
               PREV_COMMIT=$(cat PREV_COMMIT_FILE)
               git reset --hard "$PREV_COMMIT"
+
               npm install --dev
               pm2 restart crms-dev --update-env
             EOF
