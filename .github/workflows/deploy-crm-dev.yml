@@ -58,25 +58,41 @@ jobs:
             pm2 reload crms-dev --update-env
           EOF
 
+      # ================================
+      # FIXED HEALTH CHECK (with output)
+      # ================================
       - name: Health Check API
+        id: health
         run: |
-            for i in {1..5}; do
-              STATUS=$(curl -k -s -o /dev/null -w "%{http_code}" https://crms-api-dev.duckdns.org/v2/utility/health)
-              echo "Health Try $i = $STATUS"
-              [ "$STATUS" = "200" ] && break
-              sleep 5
-            done
+          for i in {1..5}; do
+            STATUS=$(curl -k -s -o /dev/null -w "%{http_code}" https://crms-api-dev.duckdns.org/v2/utility/health)
+            echo "Health Try $i = $STATUS"
+            [ "$STATUS" = "200" ] && break
+            sleep 5
+          done
 
+          echo "status=${STATUS}" >> $GITHUB_OUTPUT
+
+      # ================================
+      # FIXED ROLLBACK USING SSH + OUTPUTS
+      # ================================
       - name: Rollback on Failure
+        if: steps.health.outputs.status != '200'
         run: |
-            if [ "$STATUS" != "200" ]; then
-              echo "Health check FAILED — rolling back..."
-              git reset --hard "$PREV_COMMIT"
-              npm install --production
-              pm2 restart crms-api-staging --update-env
-              exit 1
-            fi
+          echo "❌ Health check FAILED — rolling back..."
+
+          ssh ${{ secrets.EC2_STAGING_USER }}@${{ secrets.EC2_STAGING_HOST }} << 'EOF'
+            cd /home/ubuntu/crms-backend
+
+            PREV_COMMIT=$(cat PREV_COMMIT_FILE)
+            git reset --hard "$PREV_COMMIT"
+
+            npm install --production
+            pm2 restart crms-dev --update-env
+          EOF
+
+          exit 1
 
       - name: Deployment Successful
-        if: success()
+        if: steps.health.outputs.status == '200'
         run: echo "🎉 CRM Dev Deployment Completed Successfully!"
