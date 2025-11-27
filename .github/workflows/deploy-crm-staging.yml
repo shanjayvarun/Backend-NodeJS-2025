@@ -79,12 +79,22 @@ jobs:
               exit 1
             fi
 
-            echo "---- Health OK — switching symlink to $TARGET ----"
+            echo "---- Health OK — switching live environment ----"
+
+            # Switch filesystem symlink
             ln -sfn $DEPLOY_DIR $BASE/current
 
-            echo "---- Reloading Nginx if installed ----"
-            sudo systemctl reload nginx || true
+            echo "---- Switching NGINX to $TARGET ----"
+            if [ "$TARGET" = "blue" ]; then
+              sudo ln -sfn /etc/nginx/sites-available/crms-api-staging-blue \
+                    /etc/nginx/sites-enabled/crms-api.conf
+            else
+              sudo ln -sfn /etc/nginx/sites-available/crms-api-staging-green \
+                    /etc/nginx/sites-enabled/crms-api.conf
+            fi
+
+            echo "---- Reloading NGINX ----"
+            sudo systemctl reload nginx
 
             echo "🎉 Blue–Green Deployment SUCCESS ($TARGET is now LIVE) ----"
           EOF
-
