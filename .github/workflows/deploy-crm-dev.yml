@@ -27,7 +27,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_STAGING_USER }}@${{ secrets.EC2_STAGING_HOST }} << 'EOF'
             echo "---- Navigating to project directory ----"
-            cd /home/ubuntu/crm-backend
+            cd /home/ubuntu/crms-backend
 
             echo "---- Pulling latest code from crm branch ----"
             git fetch origin crm-dev
