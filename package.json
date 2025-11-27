@@ -5,7 +5,7 @@
     "main": "server.js",
     "author": "Shanjay-Varun",
     "scripts": {
-        "start": "cross-env NODE_ENV=dev nodemon server.js"
+        "start": "cross-env NODE_ENV=prod nodemon server.js"
     },
     "dependencies": {
         "@aws-sdk/client-cloudwatch-logs": "^3.919.0",

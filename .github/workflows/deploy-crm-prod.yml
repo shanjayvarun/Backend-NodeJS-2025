@@ -1,8 +1,8 @@
-name: Deploy CRM dev
+name: Deploy CRM prod
 
 on:
   push:
-    branches: ["crm-dev"]
+    branches: ["crm-prod"]
 
 jobs:
   deploy:
@@ -17,34 +17,34 @@ jobs:
       - name: Prepare SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_STAGING_SSH_KEY }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.EC2_PROD_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.EC2_STAGING_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.EC2_PROD_HOST }} >> ~/.ssh/known_hosts
 
       # 3. Version tagging (simple)
       - name: Auto Version Tagging
         id: tag
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_STAGING_USER }}@${{ secrets.EC2_STAGING_HOST }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_PROD_USER }}@${{ secrets.EC2_PROD_HOST }} << 'EOF'
             echo "---- Navigating to project directory ----"
             cd /home/ubuntu/crms-backend
 
             echo "---- Pulling latest code from crm branch ----"
-            git fetch origin crm-dev
-            git reset --hard origin/crm-dev
+            git fetch origin crm-prod
+            git reset --hard origin/crm-prod
 
             echo "---- Applying dev environment variables ----"
-            cp .env.dev .env.dev
+            cp .env.prod .env.prod
 
             echo "---- Installing dependencies ----"
-            npm install --dev
+            npm install --prod
 
             echo "---- Reloading PM2 process (zero downtime) ----"
-            pm2 reload crms-dev --update-env
+            pm2 reload crms-prod --update-env
 
             echo "---- Running Health Check ----"
             for i in {1..5}; do
-              STATUS=$(curl -k -s -o /dev/null -w "%{http_code}" https://crms-api-dev.duckdns.org/v2/utility/health)
+              STATUS=$(curl -k -s -o /prod/null -w "%{http_code}" https://crms-api.duckdns.org/v1/utility/health)
               echo "Health Try $i = $STATUS"
               [ "$STATUS" = "200" ] && break
               sleep 5
@@ -53,8 +53,8 @@ jobs:
             if [ "$STATUS" != "200" ]; then
               echo "Health check FAILED — rolling back..."
               git reset --hard "$PREV_COMMIT"
-              npm install --dev
-              pm2 restart crms-dev --update-env
+              npm install --prod
+              pm2 restart crms-prod --update-env
               exit 1
             fi
 
