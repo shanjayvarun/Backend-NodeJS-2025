@@ -1,4 +1,4 @@
-name: Deploy CRM Prod Shanjay
+name: Deploy CRM Prod
 
 on:
   push:
