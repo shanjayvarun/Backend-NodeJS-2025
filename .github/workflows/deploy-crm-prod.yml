@@ -1,8 +1,19 @@
 name: Deploy CRM prod
 
 on:
-  push:
-    branches: ["crm-prod"]
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Why are you deploying to PRODUCTION?"
+        required: true
+      confirm:
+        description: "Type YES to confirm production deployment"
+        required: true
+        default: "NO"
+      branch:
+        description: "Which branch to deploy?"
+        required: true
+        default: "crm-prod"
 
 jobs:
   deploy:
