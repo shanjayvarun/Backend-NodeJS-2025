@@ -7,13 +7,18 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
-      # 1. Checkout source
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Setup SSH
+      - name: Auto Version Tagging
+        id: tag
+        run: |
+          TAG="prod-$(date +"%Y%m%d-%H%M%S")"
+          git tag "${TAG}"
+          git push origin "${TAG}"
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+
       - name: Prepare SSH
         run: |
           mkdir -p ~/.ssh
@@ -21,42 +26,61 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_PROD_HOST }} >> ~/.ssh/known_hosts
 
-      # 3. Version tagging (simple)
-      - name: Auto Version Tagging
-        id: tag
+      - name: Git Update CRM prod Branch
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_PROD_USER }}@${{ secrets.EC2_PROD_HOST }} << 'EOF'
-            echo "---- Navigating to project directory ----"
+          ssh ${{ secrets.EC2_PROD_USER }}@${{ secrets.EC2_PROD_HOST }} << 'EOF'
             cd /home/ubuntu/crms-backend
-
-            echo "---- Pulling latest code from crm branch ----"
+            PREV_COMMIT=$(git rev-parse HEAD)
             git fetch origin crm-prod
             git reset --hard origin/crm-prod
-
-            echo "---- Applying dev environment variables ----"
-            cp .env.prod .env.prod
-
-            echo "---- Installing dependencies ----"
-            npm install --prod
-
-            echo "---- Reloading PM2 process (zero downtime) ----"
-            pm2 reload crms-prod --update-env
-
-            echo "---- Running Health Check ----"
-            for i in {1..5}; do
-              STATUS=$(curl -k -s -o /prod/null -w "%{http_code}" https://crms-api.duckdns.org/v1/utility/health)
-              echo "Health Try $i = $STATUS"
-              [ "$STATUS" = "200" ] && break
-              sleep 5
-            done
-
-            if [ "$STATUS" != "200" ]; then
-              echo "Health check FAILED — rolling back..."
-              git reset --hard "$PREV_COMMIT"
-              npm install --prod
-              pm2 restart crms-prod --update-env
-              exit 1
-            fi
-
-            echo "---- Deployment Success ----"
+            echo "$PREV_COMMIT" > PREV_COMMIT_FILE
           EOF
+
+      - name: Apply prod Environment Variables
+        run: |
+          ssh ${{ secrets.EC2_PROD_USER }}@${{ secrets.EC2_PROD_HOST }} << 'EOF'
+            cd /home/ubuntu/crms-backend
+            cp .env.prod .env.prod
+          EOF
+
+      - name: Install Dependencies
+        run: |
+          ssh ${{ secrets.EC2_PROD_USER }}@${{ secrets.EC2_PROD_HOST }} << 'EOF'
+            cd /home/ubuntu/crms-backend
+            npm install --prod
+          EOF
+
+      - name: Reload PM2 Process
+        run: |
+          ssh ${{ secrets.EC2_PROD_USER }}@${{ secrets.EC2_PROD_HOST }} << 'EOF'
+            cd /home/ubuntu/crms-backend
+            pm2 reload crms-prod --update-env
+          EOF
+
+      - name: Health Check API
+        id: health
+        run: |
+          for i in {1..5}; do
+            STATUS=$(curl -k -s -o /prod/null -w "%{http_code}" https://crms-api.duckdns.org/v1/utility/health)
+            echo "Health Try $i = $STATUS"
+            [ "$STATUS" = "200" ] && break
+            sleep 5
+          done
+          echo "status=${STATUS}" >> $GITHUB_OUTPUT
+
+      - name: Rollback on Failure
+        if: steps.health.outputs.status != '200'
+        run: |
+          echo "Health check FAILED — rolling back..."
+          ssh ${{ secrets.EC2_PROD_USER }}@${{ secrets.EC2_PROD_HOST }} << 'EOF'
+            cd /home/ubuntu/crms-backend
+            PREV_COMMIT=$(cat PREV_COMMIT_FILE)
+            git reset --hard "$PREV_COMMIT"
+            npm install --production
+            pm2 restart crms-prod --update-env
+          EOF
+          exit 1
+
+      - name: Deployment Successful
+        if: steps.health.outputs.status == '200'
+        run: echo "CRM prod Deployment Completed Successfully!"
