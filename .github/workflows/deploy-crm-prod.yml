@@ -4,12 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       reason:
-        description: "Why are you deploying to PRODUCTION?"
-        required: true
-      confirm:
-        description: "Type YES to confirm production deployment"
-        required: true
-        default: "NO"
+        description: "Why are you deploying?"
+        required: false
+        default: "Manual deployment"
       branch:
         description: "Which branch to deploy?"
         required: true
