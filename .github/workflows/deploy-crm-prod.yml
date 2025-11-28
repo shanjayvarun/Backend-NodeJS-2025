@@ -1,4 +1,4 @@
-name: Deploy CRM prod
+name: Deploy CRM Prod
 
 on:
   workflow_dispatch:
