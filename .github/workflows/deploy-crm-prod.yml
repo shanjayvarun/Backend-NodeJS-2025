@@ -14,8 +14,6 @@ on:
         description: "Which branch to deploy?"
         required: true
         default: "crm-prod"
-  push:
-    branches: ["crm-prod"]
 
 jobs:
   deploy:
