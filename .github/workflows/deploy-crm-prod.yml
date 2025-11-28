@@ -40,7 +40,6 @@ jobs:
         run: |
           ssh ${{ secrets.EC2_PROD_USER }}@${{ secrets.EC2_PROD_HOST }} << 'EOF'
             cd /home/ubuntu/crms-backend
-            cp .env.prod .env.prod
           EOF
 
       - name: Install Dependencies
