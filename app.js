@@ -21,7 +21,6 @@ app.get("/test-error", (req, res) => {
 
 configureRoutes(app);
 
-// 👇 Global Error Logger - LAST middleware
 app.use((err, req, res, next) => {
     logger.error({
         message: err.message,

@@ -41,14 +41,15 @@ const errorFile = new winston.transports.File({
 });
 
 const transports = [dailyRotateFile, errorFile];
+const currentDate = new Date().toISOString().split('T')[0];
 
 // CloudWatch only in prod
 if (environment.mode === 'prod') {
   const WinstonCloudWatch = require('winston-cloudwatch');
   transports.push(
     new WinstonCloudWatch({
-      logGroupName: environment.cloudwatch.group || 'crm-app-logs',
-      logStreamName: environment.cloudwatch.stream || 'backend-stream',
+      logGroupName: environment.cloudwatch.group || 'crms-prod-api-logs',
+      logStreamName: `${environment.mode}-${currentDate}-stream`,
       awsRegion: environment.aws.region || 'ap-southeast-2',
       jsonMessage: true,
     })
@@ -56,9 +57,15 @@ if (environment.mode === 'prod') {
 }
 
 const logger = winston.createLogger({
-  level: 'info',
+  levels: {
+    error: 0,
+    warn: 1,
+    http: 2,
+    info: 3,
+  },
+  level: environment.mode === 'prod' ? 'http' : 'info',
   format: prodFormat,
-  defaultMeta: { service: 'crm-backend', env: environment.mode },
+  defaultMeta: { service: 'crms-backend', env: environment.mode },
   transports,
 });
 
