@@ -32,7 +32,7 @@ app.use((err, req, res, next) => {
         headers: req.headers,
     };
 
-    logger.error(JSON.stringify(logData, null, 2));
+    logger.error(logData);
 
     res.status(500).json({
         success: false,

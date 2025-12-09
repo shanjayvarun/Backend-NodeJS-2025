@@ -15,7 +15,7 @@ const requestLogger = (req, res, next) => {
             responseTime: `${responseTime} Seconds`,
             headers: req.headers,
         };
-        logger.info(`${JSON.stringify(logData, null, 2)}`);
+        logger.info(logData);
     });
     next();
 };
