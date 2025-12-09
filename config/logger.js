@@ -11,66 +11,71 @@ if (!fs.existsSync(logDir)) fs.mkdirSync(logDir);
 
 const { combine, timestamp, printf, colorize, json, align } = winston.format;
 
-// 🎨 Custom colorized console format
+// 🎨 Pretty format for console logs
 const consoleFormat = combine(
   colorize({ all: true }),
   timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
   align(),
   printf(info => {
     const emoji =
-      info.level.includes('error') ? '❌' :
-      info.level.includes('warn') ? '⚠️' :
-      info.level.includes('info') ? 'ℹ️' :
-      info.level.includes('debug') ? '🐛' : '🔹';
+      info.level === 'error' ? '❌' :
+      info.level === 'warn' ? '⚠️' :
+      info.level === 'info' ? 'ℹ️' :
+      '🔹';
     return `${emoji}  ${info.timestamp} [${info.level}]: ${info.message}`;
   })
 );
 
-// 🧩 prod format (for CloudWatch and files)
+// 📦 Format for files & CloudWatch
 const prodFormat = combine(timestamp(), json());
 
-// 🔄 Daily rotate log files
+// 🔄 Local rotating logs
 const dailyRotateFile = new winston.transports.DailyRotateFile({
   dirname: logDir,
   filename: '%DATE%.log',
   datePattern: 'YYYY-MM-DD',
-  zippedArchive: true,
   maxSize: '20m',
   maxFiles: '14d',
 });
 
-// ⚠️ Separate error logs
+// ❌ Separate file for error logs
 const errorFile = new winston.transports.File({
   filename: path.join(logDir, 'error.log'),
   level: 'error',
 });
 
+// 🧱 Base transports (local logging)
 const transports = [dailyRotateFile, errorFile];
 
-// ☁️ CloudWatch (prod only)
+// ☁️ CloudWatch enabled only in PROD
 if (environment.mode === 'prod') {
   const WinstonCloudWatch = require('winston-cloudwatch');
+
   transports.push(
     new WinstonCloudWatch({
-      logGroupName: environment.cloudwatch.group || 'crm-app-logs',
-      logStreamName: environment.cloudwatch.stream || 'backend-stream',
-      awsRegion: environment.aws.region || 'ap-southeast-2',
+      level: 'error', // 👈 only errors go to CloudWatch
+      logGroupName: environment.cloudwatch?.group || 'crm-app-logs',
+      logStreamName: environment.cloudwatch?.stream || 'backend-stream',
+      awsRegion: environment.aws?.region || 'ap-southeast-2',
       jsonMessage: true,
       retentionInDays: 14,
+
+      // 🔐 Required for CloudWatch logging
+      awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      awsSecretKey: process.env.AWS_SECRET_ACCESS_KEY,
     })
   );
 }
 
-// 🧱 Create Logger
+// 🎯 Create logger
 const logger = winston.createLogger({
-  level: 'error',                // 👈 send only real errors to CloudWatch
-  format: prodFormat,
+  level: environment.mode === 'prod' ? 'error' : 'debug',
+  format: environment.mode === 'prod' ? prodFormat : consoleFormat,
   defaultMeta: { service: 'crm-backend', env: environment.mode },
   transports,
 });
 
-
-// ✅ Always log to console (even in PM2)
+// 📺 Always show logs in console
 logger.add(
   new winston.transports.Console({
     format: consoleFormat,
