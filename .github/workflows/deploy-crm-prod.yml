@@ -71,7 +71,7 @@ jobs:
         id: health
         run: |
           for i in {1..5}; do
-            STATUS=$(curl -k -s -o /dev/null -w "%{http_code}" https://3.27.226.70/v1/utility/health --resolve crms-api.duckdns.org:443:3.27.226.70)
+            STATUS=$(curl -k -s -o /dev/null -w "%{http_code}" https://crms-api.duckdns.org/v1/utility/health)
             echo "Health Try $i = $STATUS"
             [ "$STATUS" = "200" ] && break
             sleep 5
