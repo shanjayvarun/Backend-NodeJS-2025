@@ -63,11 +63,12 @@ if (environment.mode === 'prod') {
 
 // 🧱 Create Logger
 const logger = winston.createLogger({
-  level: environment.mode === 'development' ? 'debug' : 'info',
-  format: environment.mode === 'development' ? consoleFormat : prodFormat,
+  level: 'error',                // 👈 send only real errors to CloudWatch
+  format: prodFormat,
   defaultMeta: { service: 'crm-backend', env: environment.mode },
   transports,
 });
+
 
 // ✅ Always log to console (even in PM2)
 logger.add(
