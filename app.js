@@ -5,7 +5,7 @@ const cors = require("cors");
 const requestLogger = require('./folders/middlewares/requestLogger');
 const configureRoutes = require('./config/routes.config');
 require('./config/passport.config');
-const logger = require('../CRM-Backend/config/logger');
+const logger = require('./config/logger');
 
 connectDB();
 const app = express();
