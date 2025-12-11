@@ -8,7 +8,7 @@ const corsOptions = {
         if (allowedCORSDomains.includes(origin)) {
             return callback(null, true);
         } else {
-            return callback(new Error("CORS not allowed for this origin"));
+            return callback(new Error("CORS Not Allowed"), false);
         }
     },
     methods: "GET,POST,PUT,PATCH,DELETE",

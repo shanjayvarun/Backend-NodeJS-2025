@@ -21,6 +21,15 @@ app.use(requestLogger);
 configureRoutes(app);
 
 app.use((err, req, res, next) => {
+    if (err && err.message === "CORS Not Allowed") {
+        logger.warn({
+            message: "Blocked CORS origin",
+            origin: req.headers.origin,
+            url: req.originalUrl,
+            ip: req.ip,
+        });
+        return sendError(res, 403, "CORS Error: This origin is not allowed to access the API");
+    }
     logger.error({
         message: err.message,
         stack: err.stack,
