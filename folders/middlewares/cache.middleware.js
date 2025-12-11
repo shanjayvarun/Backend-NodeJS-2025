@@ -1,4 +1,5 @@
 const redis = require('../../config/redis');
+const { sendError } = require('../utility/responses');
 
 module.exports = function cache(prefix) {
     return async (req, res, next) => {
