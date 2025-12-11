@@ -7,10 +7,10 @@ module.exports = function cache(prefix) {
             const key = `${prefix}:${queryKey}`;
             const cached = await redis.get(key);
             if (cached) {
-                console.log("CACHE HIT:", key);
+                logger.info("CACHE HIT:", key);
                 return res.status(200).json(JSON.parse(cached));
             }
-            console.log("CACHE MISS:", key);
+            logger.info("CACHE MISS:", key);
             res.sendResponse = res.json;
             res.json = async (body) => {
                 await redis.set(key, JSON.stringify(body), "EX", 30);
@@ -18,7 +18,7 @@ module.exports = function cache(prefix) {
             };
             next();
         } catch (err) {
-            console.error("Cache Error:", err);
+            sendError(err, 500, err);
             next();
         }
     };
