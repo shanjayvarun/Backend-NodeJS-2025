@@ -8,13 +8,14 @@ require('./config/passport.config');
 const logger = require('./config/logger');
 const { sendError } = require('./folders/utility/responses');
 require('./config/redis');
+const corsOptions = require("./config/cors.config");
 
 connectDB();
 const app = express();
 
 app.use(express.json());
 app.use(passport.initialize());
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(requestLogger);
 
 configureRoutes(app);

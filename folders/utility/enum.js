@@ -40,4 +40,9 @@ const NOTIFICATION_TYPES = ["comment", "like", "mention", "system"]
 
 const ROUTE_PREFIX = `/${environment.version}`;
 
-module.exports = { ROLES, ALLOWEDTYPES, S3FOLDERMAP, ROUTE_PREFIX, NOTIFICATION_TYPES, LEADSTATUS, DEALSTAGES, DEALSTATUSFLAGS };
+const allowedCORSDomains = [
+    "https://crms-app.duckdns.org",
+    "https://crms-app-dev.duckdns.org"
+];
+
+module.exports = { ROLES, ALLOWEDTYPES, S3FOLDERMAP, ROUTE_PREFIX, NOTIFICATION_TYPES, LEADSTATUS, DEALSTAGES, DEALSTATUSFLAGS, allowedCORSDomains };
