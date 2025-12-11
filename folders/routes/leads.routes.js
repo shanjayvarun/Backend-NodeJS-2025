@@ -8,7 +8,7 @@ const cache = require('../middlewares/cache.middleware');
 const router = express.Router();
 
 router.post("/create-lead", validateUserToken, checkRole([ROLES.ADMIN]), validateLead, leadsController.createLead);
-router.get("/get-all-leads", validateUserToken, checkRole([ROLES.ADMIN]), cache("all_leads_cache"), leadsController.getAllLeads);
+router.get("/get-all-leads", validateUserToken, checkRole([ROLES.ADMIN]), leadsController.getAllLeads);
 router.get("/get-lead-by-id/:id", validateUserToken, checkRole([ROLES.ADMIN]), leadsController.getLeadById);
 router.put("/update-lead/:id", validateUserToken, checkRole([ROLES.ADMIN]), leadsController.updateLead);
 router.put("/soft-delete-lead/:id", validateUserToken, checkRole([ROLES.ADMIN]), leadsController.softDeleteLead);
@@ -18,3 +18,5 @@ router.post("/create-lead-tag", validateUserToken, checkRole([ROLES.ADMIN]), lea
 router.get("/stats", validateUserToken, checkRole([ROLES.ADMIN]), leadsController.getLeadStats);
 
 module.exports = router; 
+
+//cache("all_leads_cache"),
