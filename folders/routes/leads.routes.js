@@ -3,11 +3,12 @@ const { validateUserToken, validateLead } = require('../middlewares/validation.m
 const { ROLES } = require('../utility/enum');
 const { checkRole } = require('../middlewares/roles.middleware');
 const leadsController = require('../controllers/leads.controller');
+const cache = require('../middlewares/cache.middleware');
 
 const router = express.Router();
 
 router.post("/create-lead", validateUserToken, checkRole([ROLES.ADMIN]), validateLead, leadsController.createLead);
-router.get("/get-all-leads", validateUserToken, checkRole([ROLES.ADMIN]), leadsController.getAllLeads);
+router.get("/get-all-leads", validateUserToken, checkRole([ROLES.ADMIN]), cache("all_leads_cache"), leadsController.getAllLeads);
 router.get("/get-lead-by-id/:id", validateUserToken, checkRole([ROLES.ADMIN]), leadsController.getLeadById);
 router.put("/update-lead/:id", validateUserToken, checkRole([ROLES.ADMIN]), leadsController.updateLead);
 router.put("/soft-delete-lead/:id", validateUserToken, checkRole([ROLES.ADMIN]), leadsController.softDeleteLead);
