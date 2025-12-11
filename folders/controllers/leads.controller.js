@@ -51,11 +51,12 @@ exports.getAllLeads = async (req, res) => {
         if (sortBy) sort[sortBy] = (sortOrder == 'desc') ? -1 : 1
         const leads = await leadService.getAllLeads(query, sort, skip, limit);
         if (!leads) return sendError(res, 404, 'Leads not found')
-        return res.json({
-            status: true,
-            message: 'Leads fetched successfully',
-            data: leads
-        });
+        return sendSuccessGet(res, leads, 'Leads fetched successfullly')
+        // return res.json({
+        //     status: true,
+        //     message: 'Leads fetched successfully',
+        //     data: leads
+        // });
     } catch (error) {
         return sendError(res, 500, error.message);
     }
