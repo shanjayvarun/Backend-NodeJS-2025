@@ -1,3 +1,4 @@
+const logger = require('../../config/logger');
 const redis = require('../../config/redis');
 const { sendError } = require('../utility/responses');
 
