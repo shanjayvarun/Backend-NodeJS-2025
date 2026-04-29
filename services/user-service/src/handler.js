@@ -35,7 +35,7 @@ app.get('/health', (_, res) => {
 app.get('/ready', (_, res) => {
   const isReady = mongoose.connection.readyState === 1;
   res.status(isReady ? 200 : 503).json({
-     status: isReady,
+    status: isReady,
     service: environment.serviceName,
     database: isReady ? 'connected' : 'disconnected',
   });
