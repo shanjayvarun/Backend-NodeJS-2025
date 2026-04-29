@@ -15,11 +15,29 @@ const validateUserToken = (req, res, next) => {
   const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
   if (!token) return sendError(res, 401, 'No token provided. Unauthorized');
 
-  jwt.verify(token, environment.jwt.accessSecret, (err, decoded) => {
+  jwt.verify(token, environment.jwt.accessSecret, { algorithms: [environment.jwt.algorithm] }, (err, decoded) => {
     if (err) return sendError(res, 403, 'Failed to authenticate token');
     req.user = decoded;
     return next();
   });
+};
+
+const authorizeRoles = (roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return sendError(res, 403, 'You do not have permission to perform this action');
+    }
+    return next();
+  };
+};
+
+const authorizeSelfOrRoles = (roles) => {
+  return (req, res, next) => {
+    if (roles.includes(req.user.role) || req.user.id === req.params.id) {
+      return next();
+    }
+    return sendError(res, 403, 'You do not have permission to access this user');
+  };
 };
 
 const validateMongoId = [
@@ -60,6 +78,8 @@ const validateUpdateUser = [
 
 module.exports = {
   validateUserToken,
+  authorizeRoles,
+  authorizeSelfOrRoles,
   validateMongoId,
   validateGetUsers,
   validateCreateUser,

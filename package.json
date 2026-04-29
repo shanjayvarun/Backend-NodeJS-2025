@@ -5,8 +5,10 @@
     "main": "services/auth-service/server.js",
     "author": "Shanjay-Varun",
     "scripts": {
-        "start:auth": "cross-env NODE_ENV=prod PORT=4001 nodemon services/auth-service/server.js",
-        "start:user": "cross-env NODE_ENV=prod PORT=4002 nodemon services/user-service/server.js"
+        "start:auth": "cross-env NODE_ENV=prod SERVICE_NAME=auth-service PORT=4001 node services/auth-service/server.js",
+        "start:user": "cross-env NODE_ENV=prod SERVICE_NAME=user-service PORT=4002 node services/user-service/server.js",
+        "dev:auth": "cross-env NODE_ENV=dev SERVICE_NAME=auth-service PORT=4001 nodemon services/auth-service/server.js",
+        "dev:user": "cross-env NODE_ENV=dev SERVICE_NAME=user-service PORT=4002 nodemon services/user-service/server.js"
     },
     "dependencies": {
         "bcrypt": "^5.1.1",
@@ -14,7 +16,9 @@
         "cross-env": "^10.1.0",
         "dotenv": "^16.4.5",
         "express": "^4.21.1",
+        "express-rate-limit": "^8.1.0",
         "express-validator": "^7.2.0",
+        "helmet": "^8.1.0",
         "jsonwebtoken": "^9.0.2",
         "mongoose": "^7.8.2"
     },

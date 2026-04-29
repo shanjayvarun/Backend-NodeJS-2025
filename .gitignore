@@ -1,4 +1,5 @@
 node_modules/
 logs/
-.env.prod
+.env*
+!.env.example
 NOTES.txt

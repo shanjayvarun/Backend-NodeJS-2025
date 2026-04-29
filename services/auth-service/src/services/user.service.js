@@ -17,6 +17,10 @@ exports.getUserById = async (id) => {
   return await User.findById(id).select('-password -refreshToken').lean();
 };
 
+exports.getUserByIdWithRefreshToken = async (id) => {
+  return await User.findById(id).select('-password').lean();
+};
+
 exports.findOneByEmail = async (email) => {
   return await User.findOne({ email }).lean();
 };

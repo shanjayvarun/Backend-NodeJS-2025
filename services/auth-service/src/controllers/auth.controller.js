@@ -4,6 +4,19 @@ const userService = require('../services/user.service');
 const environment = require('../config/env');
 const { sendSuccess, sendError } = require('../utils/response.util');
 
+const getSafeUserData = (data) => {
+  const allowedFields = ['name', 'email', 'password', 'role', 'profilePicture', 'phone', 'bio', 'userStatus'];
+  const payload = {};
+
+  allowedFields.forEach((field) => {
+    if (Object.prototype.hasOwnProperty.call(data, field)) {
+      payload[field] = data[field];
+    }
+  });
+
+  return payload;
+};
+
 exports.loginUser = async (req, res) => {
   try {
     const user = await userService.findOneByEmail(req.body.email);
@@ -20,7 +33,7 @@ exports.loginUser = async (req, res) => {
       environment.jwt.refreshSecret,
       { expiresIn: environment.jwt.refreshExpiresIn, algorithm: environment.jwt.algorithm }
     );
-    await userService.updateUser(user._id, { lastLoginAt: new Date(), refreshToken });
+    const updatedUser = await userService.updateUser(user._id, { lastLoginAt: new Date(), refreshToken });
     return sendSuccess(
       res,
       200,
@@ -31,7 +44,7 @@ exports.loginUser = async (req, res) => {
           id: user._id,
           name: user.name,
           role: user.role,
-          lastLoginAt: user.lastLoginAt,
+          lastLoginAt: updatedUser.lastLoginAt,
         },
       },
       'User logged in successfully'
@@ -44,7 +57,7 @@ exports.loginUser = async (req, res) => {
 exports.generateRefreshToken = async (req, res) => {
   try {
     const decoded = jwt.verify(req.body.refreshToken, environment.jwt.refreshSecret);
-    const user = await userService.getUserById(decoded.id);
+    const user = await userService.getUserByIdWithRefreshToken(decoded.id);
     if (!user || user.refreshToken !== req.body.refreshToken) {
       return sendError(res, 403, 'Invalid refresh token');
     }
@@ -55,7 +68,7 @@ exports.generateRefreshToken = async (req, res) => {
     );
     return sendSuccess(res, 201, { newAccessToken }, 'Token refreshed successfully');
   } catch (error) {
-    return sendError(res, 500, error.message);
+    return sendError(res, 403, 'Invalid refresh token');
   }
 };
 
@@ -75,9 +88,10 @@ exports.createUser = async (req, res) => {
   try {
     const saltRounds = environment.mode === 'development' ? 10 : 12;
     const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
-    const user = await userService.saveUser({ ...req.body, password: hashedPassword });
+    const user = await userService.saveUser({ ...getSafeUserData(req.body), password: hashedPassword });
     const modifiedUser = user.toObject();
     delete modifiedUser.password;
+    delete modifiedUser.refreshToken;
     return sendSuccess(res, 201, modifiedUser, 'User registered successfully');
   } catch (error) {
     if (error.code === 11000) return sendError(res, 409, 'Email already exists');

@@ -2,6 +2,8 @@ const express = require('express');
 const userController = require('../controllers/user.controller');
 const {
   validateUserToken,
+  authorizeRoles,
+  authorizeSelfOrRoles,
   validateMongoId,
   validateGetUsers,
   validateCreateUser,
@@ -10,10 +12,10 @@ const {
 
 const router = express.Router();
 
-router.get('/', validateUserToken, validateGetUsers, userController.getAllUsers);
-router.get('/:id', validateUserToken, validateMongoId, userController.getUserById);
-router.post('/', validateUserToken, validateCreateUser, userController.createUser);
-router.patch('/:id', validateUserToken, validateMongoId, validateUpdateUser, userController.updateUser);
-router.delete('/:id', validateUserToken, validateMongoId, userController.deleteUser);
+router.get('/', validateUserToken, authorizeRoles(['ADMIN']), validateGetUsers, userController.getAllUsers);
+router.get('/:id', validateUserToken, validateMongoId, authorizeSelfOrRoles(['ADMIN']), userController.getUserById);
+router.post('/', validateUserToken, authorizeRoles(['ADMIN']), validateCreateUser, userController.createUser);
+router.patch('/:id', validateUserToken, validateMongoId, authorizeSelfOrRoles(['ADMIN']), validateUpdateUser, userController.updateUser);
+router.delete('/:id', validateUserToken, validateMongoId, authorizeRoles(['ADMIN']), userController.deleteUser);
 
 module.exports = router;

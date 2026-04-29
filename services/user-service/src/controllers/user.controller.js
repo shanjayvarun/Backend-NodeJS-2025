@@ -3,21 +3,19 @@ const userService = require('../services/user.service');
 const environment = require('../config/env');
 const { sendSuccess, sendError } = require('../utils/response.util');
 
-const getSafeUserData = async (data) => {
+const getSafeUserData = async (data, actorRole) => {
   const allowedFields = [
     'name',
     'email',
-    'password',
-    'role',
     'profilePicture',
     'phone',
     'bio',
-    'isVerified',
-    'userStatus',
   ];
+  const adminOnlyFields = ['password', 'role', 'isVerified', 'userStatus'];
+  const fields = actorRole === 'ADMIN' ? [...allowedFields, ...adminOnlyFields] : allowedFields;
   const payload = {};
 
-  allowedFields.forEach((field) => {
+  fields.forEach((field) => {
     if (Object.prototype.hasOwnProperty.call(data, field)) {
       payload[field] = data[field];
     }
@@ -66,7 +64,7 @@ exports.getUserById = async (req, res) => {
 
 exports.createUser = async (req, res) => {
   try {
-    const data = await getSafeUserData(req.body);
+    const data = await getSafeUserData(req.body, req.user.role);
     const user = await userService.saveUser(data);
     const modifiedUser = user.toObject();
     delete modifiedUser.password;
@@ -80,7 +78,7 @@ exports.createUser = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
   try {
-    const data = await getSafeUserData(req.body);
+    const data = await getSafeUserData(req.body, req.user.role);
     const user = await userService.updateUser(req.params.id, data);
     if (!user) return sendError(res, 404, 'User not found');
     return sendSuccess(res, 200, user, 'User updated successfully');

@@ -1,5 +1,6 @@
 const { body, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
+const environment = require('../config/env');
 const { sendError } = require('../utils/response.util');
 
 const handleValidationErrors = (req, res, next) => {
@@ -28,11 +29,17 @@ const validateRefreshToken = [
   handleValidationErrors,
 ];
 
+const validateChangePassword = [
+  body('oldPassword').notEmpty().withMessage('Old password is required'),
+  body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters'),
+  handleValidationErrors,
+];
+
 const validateUserToken = (req, res, next) => {
   const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
   if (!token) return sendError(res, 401, 'No token provided. Unauthorized');
 
-  jwt.verify(token, process.env.JWT_ACCESS_SECRET, (err, decoded) => {
+  jwt.verify(token, environment.jwt.accessSecret, { algorithms: [environment.jwt.algorithm] }, (err, decoded) => {
     if (err) return sendError(res, 403, 'Failed to authenticate token');
     req.user = decoded;
     return next();
@@ -43,5 +50,6 @@ module.exports = {
   validateUserRegistration,
   validateUserLogin,
   validateRefreshToken,
+  validateChangePassword,
   validateUserToken,
 };
