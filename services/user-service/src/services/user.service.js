@@ -13,6 +13,10 @@ exports.getAllUsers = async (query, order, skip, limit) => {
     .lean();
 };
 
+exports.countUsers = async (query) => {
+  return await User.countDocuments(query);
+};
+
 exports.getUserById = async (id) => {
   return await User.findById(id).select('-password -refreshToken').lean();
 };
@@ -22,17 +26,7 @@ exports.findOneByEmail = async (email) => {
 };
 
 exports.updateUser = async (id, data) => {
-  return await User.findByIdAndUpdate(id, data, { new: true })
-    .select('-password -refreshToken')
-    .lean();
-};
-
-exports.changePasswordByEmail = async (email, hashedPassword) => {
-  return await User.findOneAndUpdate(
-    { email },
-    { password: hashedPassword },
-    { new: true }
-  )
+  return await User.findByIdAndUpdate(id, data, { new: true, runValidators: true })
     .select('-password -refreshToken')
     .lean();
 };

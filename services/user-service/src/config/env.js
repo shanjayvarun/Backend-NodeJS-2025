@@ -13,9 +13,6 @@ module.exports = {
   mongoUri: process.env.MONGO_URI,
   jwt: {
     accessSecret: process.env.JWT_ACCESS_SECRET,
-    refreshSecret: process.env.JWT_REFRESH_SECRET,
-    accessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN,
-    refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN,
     algorithm: process.env.JWT_ALGO,
   },
 };
