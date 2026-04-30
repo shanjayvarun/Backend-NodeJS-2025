@@ -1,9 +1,10 @@
 {
   "name": "crm-monorepo",
   "private": true,
-  "workspaces": ["services/*"],
+  "workspaces": [
+    "services/*"
+  ],
   "scripts": {
-    "install": "npm install",
     "bootstrap": "pnpm -w install",
     "dev": "concurrently \"pnpm --filter @crm/auth-service --parallel run dev\" \"pnpm --filter @crm/user-service --parallel run dev\"",
     "start": "concurrently \"pnpm --filter @crm/auth-service run start\" \"pnpm --filter @crm/user-service run start\"",
