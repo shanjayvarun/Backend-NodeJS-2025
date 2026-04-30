@@ -2,17 +2,7 @@
 
 This repository is organized as a small microservices monorepo. Services live under `services/`.
 
-Quick start (recommended: pnpm)
-
-```bash
-# install pnpm via corepack (Node 16.10+), then bootstrap the workspace
-corepack enable
-pnpm -v
-pnpm -w install
-pnpm run dev
-```
-
-If you prefer npm:
+Quick start:
 
 ```bash
 # from repo root
@@ -24,6 +14,7 @@ Run a single service:
 
 ```bash
 cd services/auth-service
-pnpm install
-pnpm run dev
+npm install
+npm run dev
 ```
+

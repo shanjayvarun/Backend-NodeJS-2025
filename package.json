@@ -5,9 +5,9 @@
     "services/*"
   ],
   "scripts": {
-    "bootstrap": "pnpm -w install",
-    "dev": "concurrently \"pnpm --filter @crm/auth-service --parallel run dev\" \"pnpm --filter @crm/user-service --parallel run dev\"",
-    "start": "concurrently \"pnpm --filter @crm/auth-service run start\" \"pnpm --filter @crm/user-service run start\"",
+    "bootstrap": "npm install",
+    "dev": "concurrently \"npm --workspace @crm/auth-service run dev\" \"npm --workspace @crm/user-service run dev\"",
+    "start": "concurrently \"npm --workspace @crm/auth-service run start\" \"npm --workspace @crm/user-service run start\"",
     "lint": "eslint \"services/**/*.{js,mjs,cjs}\" --quiet",
     "format": "prettier --write \"services/**/*.{js,json,md}\"",
     "test": "jest --runInBand"
