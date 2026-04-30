@@ -1,5 +1,8 @@
 node_modules/
-logs/
-.env*
-!.env.example
-NOTES.txt
+.env
+.DS_Store
+coverage/
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
