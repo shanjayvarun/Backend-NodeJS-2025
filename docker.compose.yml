@@ -1,0 +1,36 @@
+services:
+ # 1. AUTH SERVICES
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    container_name: auth-container
+    ports:
+      - "4001:4001"
+    env_file:
+      - ./services/auth-service/.env.prod
+    restart: always
+
+ # 2. USER SERVICES
+  user-service:
+    build:
+      context: ./services/user-service
+      dockerfile: Dockerfile
+    container_name: user-container
+    ports:
+      - "4002:4002"
+    env_file:
+      - ./services/user-service/.env.prod
+    restart: always
+
+  # 3. NGINX GATEWAY
+  nginx:
+    image: nginx:alpine
+    container_name: nginx-gateway
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - auth-service
+      - user-service
