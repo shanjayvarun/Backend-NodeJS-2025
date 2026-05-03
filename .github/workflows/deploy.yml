@@ -15,6 +15,8 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /home/ec2-user/crms-backend
+            
+            # 1. Standard Git Logic
             if [ ! -d ".git" ]; then
               git clone -b crm-microservices https://github.com/shanjayvarun/crms-backend.git .
             else
@@ -22,6 +24,17 @@ jobs:
               git checkout crm-microservices
               git pull origin crm-microservices
             fi
+
+            # 2. PRO-LEVEL SECRET INJECTION
+            # This creates the directory and the file safely
             mkdir -p services/auth-service
-            echo "${{ secrets.AUTH_SERVICE_ENV }}" > services/auth-service/.env.prod
+            cat <<EOF > services/auth-service/.env.prod
+            ${{ secrets.AUTH_SERVICE_ENV }}
+            EOF
+
+            # 3. VERIFY (Skeptical Step)
+            # This prints "File exists" to your GitHub logs so you can be sure
+            ls -la services/auth-service/.env.prod && echo "Env file successfully created."
+
+            # 4. Start Docker
             docker compose up -d --build
