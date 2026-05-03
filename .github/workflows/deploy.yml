@@ -22,4 +22,6 @@ jobs:
               git checkout crm-microservices
               git pull origin crm-microservices
             fi
+            mkdir -p services/auth-service
+            echo "${{ secrets.AUTH_SERVICE_ENV }}" > services/auth-service/.env.prod
             docker compose up -d --build
