@@ -1,0 +1,25 @@
+name: Deploy CRMS to AWS
+on:
+  push:
+    branches: [ crm-microservices ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/ec2-user/crms-backend
+            if [ ! -d ".git" ]; then
+              git clone -b crm-microservices https://github.com/shanjayvarun/crms-backend.git .
+            else
+              git fetch origin
+              git checkout crm-microservices
+              git pull origin crm-microservices
+            fi
+            docker compose up -d --build
