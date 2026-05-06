@@ -76,7 +76,7 @@ resource "aws_security_group" "crms_sg_tf" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["182.95.96.62/32"] # Only SSH from my Twixor AP Wifi IP
+    cidr_blocks = ["0.0.0.0/0"] # Only SSH from my Twixor AP Wifi IP
   }
   egress {
     from_port   = 0
