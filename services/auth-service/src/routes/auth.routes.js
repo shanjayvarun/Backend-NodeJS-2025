@@ -9,6 +9,7 @@ const {
 } = require('../middlewares/auth.middleware');
 
 const router = express.Router();
+// Routest test
 
 router.post('/login', validateUserLogin, authController.loginUser);
 router.post('/refresh-token', validateRefreshToken, authController.generateRefreshToken);
