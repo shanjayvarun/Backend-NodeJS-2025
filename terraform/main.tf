@@ -108,7 +108,8 @@ resource "aws_instance" "crms_server_tf" {
   # Attaches Firewalls Ids
   vpc_security_group_ids = [aws_security_group.crms_sg_tf.id]
   # Runs shell commands during server boot. Like Startup Automation
-user_data = <<-EOF
+  user_data_replace_on_change = true
+  user_data = <<-EOF
               #!/bin/bash
               # Redirect all output to a log file we can check
               exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
