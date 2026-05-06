@@ -11,25 +11,23 @@ jobs:
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@master
-
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-
           script: |
-            # 1. WAIT for the server to finish its own setup (User Data)
+            # 1. Wait for User Data to finish installing Git and Docker
             echo "Waiting for system setup to complete..."
             until [ -f /var/lib/cloud/instance/boot-finished ]; do
               sleep 5
             done
             echo "System setup finished. Starting deployment..."
 
-            # 2. Create project directory
+            # 2. Prepare Project Directory
             mkdir -p /home/ec2-user/crms-backend
             cd /home/ec2-user/crms-backend
 
-            # 3. Clone or pull (Git should be ready now)
+            # 3. Clone or Update Repository
             if [ ! -d ".git" ]; then
               git clone -b crm-microservices https://github.com/shanjayvarun/crms-backend.git .
             else
@@ -38,7 +36,24 @@ jobs:
               git reset --hard origin/crm-microservices
             fi
 
-            # ... [Rest of your ENV setup] ...
+            # 4. Create Service Folders and Inject ENV Secrets
+            # We use quoted 'EOF' to prevent the shell from mangling special characters in passwords
+            mkdir -p services/auth-service
+            mkdir -p services/user-service
 
-            # 4. Docker Deploy (Using sudo just in case the group change hasn't refreshed)
+            cat <<'EOF' > services/auth-service/.env.prod
+            ${{ secrets.AUTH_SERVICE_ENV }}
+            EOF
+
+            cat <<'EOF' > services/user-service/.env.prod
+            ${{ secrets.USER_SERVICE_ENV }}
+            EOF
+
+            # 5. Verify Files Exist (For logs)
+            echo "Checking deployment files..."
+            ls -la services/auth-service/.env.prod
+            ls -la services/user-service/.env.prod
+
+            # 6. Docker Deployment
+            # Using sudo ensures we don't hit permission errors before the group change takes effect
             sudo docker compose up -d --build
