@@ -18,12 +18,18 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
 
           script: |
-            # Create project directory
-            mkdir -p /home/ec2-user/crms-backend
+            # 1. WAIT for the server to finish its own setup (User Data)
+            echo "Waiting for system setup to complete..."
+            until [ -f /var/lib/cloud/instance/boot-finished ]; do
+              sleep 5
+            done
+            echo "System setup finished. Starting deployment..."
 
+            # 2. Create project directory
+            mkdir -p /home/ec2-user/crms-backend
             cd /home/ec2-user/crms-backend
 
-            # Clone or pull
+            # 3. Clone or pull (Git should be ready now)
             if [ ! -d ".git" ]; then
               git clone -b crm-microservices https://github.com/shanjayvarun/crms-backend.git .
             else
@@ -32,25 +38,7 @@ jobs:
               git reset --hard origin/crm-microservices
             fi
 
-            # Auth Service ENV
-            mkdir -p services/auth-service
+            # ... [Rest of your ENV setup] ...
 
-            cat <<EOF > services/auth-service/.env.prod
-            ${{ secrets.AUTH_SERVICE_ENV }}
-            EOF
-
-            # User Service ENV
-            mkdir -p services/user-service
-
-            cat <<EOF > services/user-service/.env.prod
-            ${{ secrets.USER_SERVICE_ENV }}
-            EOF
-
-            # Verify
-            pwd
-            ls -la
-            ls -la services/auth-service
-            ls -la services/user-service
-
-            # Docker Deploy
-            docker compose up -d --build
+            # 4. Docker Deploy (Using sudo just in case the group change hasn't refreshed)
+            sudo docker compose up -d --build
