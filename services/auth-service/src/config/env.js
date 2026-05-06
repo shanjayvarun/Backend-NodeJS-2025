@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 
 const envFile = process.env.NODE_ENV === 'prod' ? '.env.prod' : '.env.dev';
 const projectRoot = path.resolve(__dirname, '../../../..');
-
+//
 dotenv.config({ path: path.resolve(projectRoot, envFile), override: true });
 
 const getRequiredEnv = (key) => {
