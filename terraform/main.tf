@@ -125,7 +125,7 @@ EOF
   lifecycle {
     # if True Means It Prevents Accidental Deletion False means Deletion Allowed. Very uch Useful for Production DBs
     # If You want to Change or delete the machine means, you need to change this to false , terrform apply and then terraform destroy it
-    prevent_destroy = true
+    prevent_destroy = false
   }
 
   # Metadata labels for AWS Resources
