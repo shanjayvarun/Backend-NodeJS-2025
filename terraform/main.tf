@@ -108,27 +108,34 @@ resource "aws_instance" "crms_server_tf" {
   # Attaches Firewalls Ids
   vpc_security_group_ids = [aws_security_group.crms_sg_tf.id]
   # Runs shell commands during server boot. Like Startup Automation
-  user_data = <<EOF
+user_data = <<-EOF
               #!/bin/bash
-              set -e
-              # Update packages
+              # Redirect all output to a log file we can check
+              exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
+              
+              echo "Starting User Data Script..."
+              
+              # Wait for internet connectivity
+              until ping -c 1 google.com; do echo "Waiting for network..."; sleep 2; done
+
+              # Force update and install
+              dnf clean all
               dnf update -y
-              # Install Git + Docker
               dnf install -y git docker
-              # Start Docker
+              
+              # Start and Enable Docker
               systemctl start docker
               systemctl enable docker
-              # Add ec2-user to docker group
+              
+              # Permissions
               usermod -aG docker ec2-user
-              # Install Docker Compose
+              
+              # Docker Compose Plugin
               mkdir -p /usr/local/lib/docker/cli-plugins/
-              curl -SL https://github.com/docker/compose/releases/download/v2.26.1/docker-compose-linux-x86_64 \
-              -o /usr/local/lib/docker/cli-plugins/docker-compose
+              curl -SL https://github.com/docker/compose/releases/download/v2.26.1/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose
               chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
-              # Create project folder
-              mkdir -p /home/ec2-user/crms-backend
-              # Ownership
-              chown -R ec2-user:ec2-user /home/ec2-user/crms-backend
+              
+              echo "User Data Script Finished!"
               EOF
   # Terraform lifecycle behavior.
   lifecycle {
