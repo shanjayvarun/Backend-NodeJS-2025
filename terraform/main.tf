@@ -11,12 +11,13 @@ terraform {
     }
   }
 
+  # Tells Terraform to Store the Sate Remotely in S3 Instead of Local machine
   backend "s3" {
-    bucket         = "crms-tf-state-greta-2026"
-    key            = "global/s3/terraform.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "CRMS-tf-state-lock"
-    encrypt        = "true"
+    bucket         = "crms-tf-state-greta-2026"    # S3 bucket storing state file.
+    key            = "global/s3/terraform.tfstate" # path inside the bucket
+    region         = "us-east-1"                   # region whetehr the bucket exists
+    dynamodb_table = "CRMS-tf-state-lock"          # enables state locking. terraform uses this table when apply plan and destroy operations
+    encrypt        = "true"                        # encrypts terraform state file in s3
   }
 }
 
@@ -99,7 +100,7 @@ resource "aws_instance" "crms_server_tf" {
   # Operating system image
   ami = "ami-0ed094fb1304fd857"
   # Server Size
-  instance_type = terraform.workspace == "prod" ? "t3.small" : "t3.micro"
+  instance_type = terraform.workspace == "prod" ? "t3.micro" : "t3.small"
   # SSH Key pair name ( Mainly used for SSH into the Machine)
   key_name = "shanjay-key"
   # Attaches IAM Permissions
@@ -139,7 +140,7 @@ resource "aws_instance" "crms_server_tf" {
   # Metadata labels for AWS Resources
   tags = {
     # Visible name in AWS console. Helps identify server.
-    Name = "${var.project_name}-Microservices-Prod"
+    Name = "${var.project_name}-Microservices-${terraform.workspace}"
     # env Type Companies rely Heavily for Complaince, Billing, Filtering, and Automation
     Environment = terraform.workspace
   }
