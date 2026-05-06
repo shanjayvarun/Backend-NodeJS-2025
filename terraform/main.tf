@@ -10,6 +10,14 @@ terraform {
       version = "~> 5.0"
     }
   }
+
+  backend "s3" {
+    bucket         = "crms-tf-state-greta-2026"
+    key            = "global/s3/terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "CRMS-tf-state-lock"
+    encrypt        = "true"
+  }
 }
 
 # Configures AWS Connection which we Declared Above
@@ -91,7 +99,7 @@ resource "aws_instance" "crms_server_tf" {
   # Operating system image
   ami = "ami-0ed094fb1304fd857"
   # Server Size
-  instance_type = "t3.micro"
+  instance_type = terraform.workspace == "prod" ? "t3.small" : "t3.micro"
   # SSH Key pair name ( Mainly used for SSH into the Machine)
   key_name = "shanjay-key"
   # Attaches IAM Permissions
@@ -100,27 +108,27 @@ resource "aws_instance" "crms_server_tf" {
   vpc_security_group_ids = [aws_security_group.crms_sg_tf.id]
   # Runs shell commands during server boot. Like Startup Automation
   user_data = <<EOF
-#!/bin/bash
-set -e
-# Update packages
-dnf update -y
-# Install Git + Docker
-dnf install -y git docker
-# Start Docker
-systemctl start docker
-systemctl enable docker
-# Add ec2-user to docker group
-usermod -aG docker ec2-user
-# Install Docker Compose
-mkdir -p /usr/local/lib/docker/cli-plugins/
-curl -SL https://github.com/docker/compose/releases/download/v2.26.1/docker-compose-linux-x86_64 \
--o /usr/local/lib/docker/cli-plugins/docker-compose
-chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
-# Create project folder
-mkdir -p /home/ec2-user/crms-backend
-# Ownership
-chown -R ec2-user:ec2-user /home/ec2-user/crms-backend
-EOF
+              #!/bin/bash
+              set -e
+              # Update packages
+              dnf update -y
+              # Install Git + Docker
+              dnf install -y git docker
+              # Start Docker
+              systemctl start docker
+              systemctl enable docker
+              # Add ec2-user to docker group
+              usermod -aG docker ec2-user
+              # Install Docker Compose
+              mkdir -p /usr/local/lib/docker/cli-plugins/
+              curl -SL https://github.com/docker/compose/releases/download/v2.26.1/docker-compose-linux-x86_64 \
+              -o /usr/local/lib/docker/cli-plugins/docker-compose
+              chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+              # Create project folder
+              mkdir -p /home/ec2-user/crms-backend
+              # Ownership
+              chown -R ec2-user:ec2-user /home/ec2-user/crms-backend
+              EOF
   # Terraform lifecycle behavior.
   lifecycle {
     # if True Means It Prevents Accidental Deletion False means Deletion Allowed. Very uch Useful for Production DBs
@@ -133,7 +141,7 @@ EOF
     # Visible name in AWS console. Helps identify server.
     Name = "${var.project_name}-Microservices-Prod"
     # env Type Companies rely Heavily for Complaince, Billing, Filtering, and Automation
-    Environment = "Production"
+    Environment = terraform.workspace
   }
 
 }
