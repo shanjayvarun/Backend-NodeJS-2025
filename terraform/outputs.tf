@@ -6,10 +6,10 @@ output "prod_instance_ip" {
 
 output "s3_bucket_name" {
   description = "Bucket Name of the Terraform State File Stored"
-  value = aws_s3_bucket.tf_state.bucket
+  value       = aws_s3_bucket.tf_state.bucket
 }
 
 output "tf_state_lock_dynamoDB_name" {
   description = "Dynamo DB Name of the Terraform State file Created"
-  value = aws_dynamodb_table.tf_state_lock.name
+  value       = aws_dynamodb_table.tf_state_lock.name
 }
