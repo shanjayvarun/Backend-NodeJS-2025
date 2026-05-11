@@ -1,0 +1,127 @@
+xxx Terraform xxx
+1. How do you handle Terraform state files?
+ I use a Remote Backend with S3 for storage and DynamoDB for state locking.
+ This ensures the state is centralized, backed up, and protected from corruption during team collaboration.
+
+2. How did you deploy environments via Terraform?
+ I use Terraform Workspaces to reuse the same code across Dev, Staging, and Prod.
+ For example, I’ve used separate workspaces for dev, staging, and prod where naming, instance sizes, and environment-specific .tfvars file values change dynamically based on terraform.workspace.
+
+3. How did you invoke Terraform in GitHub Actions?
+ I use the hashicorp/setup-terraform action.
+ The workflow triggers on a push, runs init, plan, and apply.
+ I use OIDC for secure authentication to AWS so I don't have to store long-lived access keys.
+
+4. What happens when Terraform fails partially?
+ Terraform updates the state for whatever it successfully built.
+ I fix the code and run apply again.
+ Terraform is Idempotent, so it will only create the missing pieces, not the whole thing.
+
+5. What are the commonly used Terraform commands?
+ terraform init: is the first command I run when setting up a Terraform project. It initializes the working directory by downloading required providers, setting up backend configuration like Amazon S3 remote state, and installing modules if used. 
+ Example: If my project uses AWS provider and remote backend in S3, init prepares all of that before I can plan or apply.
+
+ terraform validate: checks whether my Terraform configuration is syntactically valid and whether resource arguments are correctly structured.
+ I usually run this in CI before plan to catch broken configs early.
+
+ terraform fmt: automatically formats Terraform code with proper indentation and standard styling.
+ In teams, this helps keep PRs clean and avoids unnecessary formatting noise.
+
+ terraform workspace: I use Terraform Workspaces to reuse the same code across Dev, Staging, and Prod.
+ For example, I’ve used separate workspaces for dev, staging, and prod where naming, instance sizes, and environment-specific .tfvars file values that change dynamically based on terraform.workspace.
+
+ terraform plan: my safety checkpoint before deployment. It compares my desired configuration in .tf files with the current state and shows what will be created, modified, or destroyed before any real changes happen.
+
+ terraform apply: executes the actual infrastructure changes. It makes real API calls to Amazon Web Services and provisions, updates, or deletes infrastructure.
+
+ terraform taint: Earlier I used terraform taint when a specific resource got corrupted and needed recreation without affecting the full infrastructure.
+ Example: if EC2 user_data failed during provisioning, I’d recreate only that instance.
+ In newer versions, I prefer: terraform apply -replace=resource_name
+
+ terraform state list: shows all resources currently tracked in the Terraform state file.
+ I use it during debugging to verify whether Terraform is actually managing a resource.
+
+ terraform state mv: Moves resource mapping from one Terraform address to another without recreating infrastructure.
+ I've used this during refactoring when moving resources into modules.
+
+ terraform state rm: Removes a resource from Terraform state without deleting the actual resource in AWS.
+ I’ve used this when a resource needed manual handling temporarily or when Terraform should stop managing it.
+
+ terraform import: Helps bring existing manually created AWS resources under Terraform management. It updates state, not code.
+ if an Amazon S3 bucket was manually created before Terraform adoption, I can import it into state instead of recreating it.
+ 
+ terraform output: displays values exposed from outputs.tf file.
+ This helps downstream teams quickly access important deployment values like ( EC2 public IP, RDS endpoint, Load balancer DNS, S3 bucket names, etc)
+
+ terraform refresh: updates the Terraform state file by checking the real infrastructure in Amazon Web Services and syncing the latest resource values into the state.
+ I used it mainly when someone manually changed infrastructure from the AWS console and I wanted Terraform to understand the current real-world state before taking further action.
+ 
+ xxxxxxxxxxxxx TAKE 2 MINUTES REST AND REVISE ALL THE ABOVE xxxxxxxxxxxxx
+
+6. What is an S3 backend in Terraform?
+ The S3 backend stores the .tfstate file remotely.
+
+7. What is lifecycle in Terraform?
+ Lifecycle rules in Terraform (like prevent_destroy) protect critical resources from being deleted accidentally during an apply.
+
+8. What is state locking in Terraform?
+ It’s a mechanism (using DynamoDB) that prevents two developers from running apply at the same time. If the 'Lock' is held, the second person's process will wait or fail, preventing state corruption.
+
+9. What happens when the Terraform state file is not in sync with AWS cloud resources?
+ This is called Configuration Drift. I run terraform plan to see the differences. I use terraform refresh to update the state file, or apply to push my code's reality back onto the cloud.
+
+10. How do you handle state locking in Terraform?
+ By configuring the dynamodb_table attribute in the backend "s3" block. Terraform automatically manages the lock/unlock logic during every execution.
+
+11. How do you handle sensitive data in Terraform?
+ I use the sensitive = true flag on variables to hide them from logs. I never hardcode secrets; I store them in AWS Secrets Manager and pull them in using a data block.
+
+12. What are Terraform modules?
+ Modules are containers for multiple resources that are used together. They allow you to write dry, reusable code (DRY - Don't Repeat Yourself) to standardize infrastructure across the company
+
+13. How do you call a module in Terraform?
+ Using the module block in the parent configuration. I specify the source (where the module code lives) and pass in the required input variables.
+
+14. What is the difference between a data block and a resource block in Terraform?
+ A Resource block manages (creates/updates/deletes) infrastructure. A Data block is read-only; it fetches information from existing resources in AWS that Terraform didn't necessarily create.
+
+15. What is the difference between terraform refresh and terraform import?
+ Refresh updates the state to match what is currently in AWS. Import brings a manually created resource into Terraform's management for the first time.
+
+16. What command is used to deploy Terraform without manual approval?
+ The command is terraform apply -auto-approve. This is typically used in automated CI/CD pipelines where manual intervention isn't possible.
+
+17. OIDC ( Open ID Connect )
+ an authentication mechanism that allows applications like GitHub Actions to securely assume temporary roles in AWS without storing long-term AWS access keys.
+ Old Way - Stores AWS Access Keys and Secret Key in CI Secrets - Too Risky
+ New Way - Github Actions Run  - Github send identity Token  - AWS Verifies Token - AWS IAM Role is Assumed Temporarily - Terraform runs
+ Poses Better Security Posture, temporary Access and No Permanent Credentials.
+
+18. State means ?
+ Terraform state is a mapping file that tracks what infrastructure Terraform manages and connects real AWS resources with Terraform configuration.
+ It Stores Things like Ec2 IDs, S3 Bucket IDs, Subnet Mappings and Metadata
+ Without State, Terraform Wotn know what already exists, what needs update or what needs creation
+
+19. Why Terraform is Idempotent
+ Idempotent means running the same Terraform code multiple times produces the same infrastructure state if no changes were made.
+ For Eg : Run terraform apply - creates EC2 | Run again without changes - No changes. Infrastructure matches configuration, that’s idempotency. It prevents duplicate infrastructure creation.
+
+20. Tell me about a Terraform issue you faced
+ Situation:
+ During a production deployment, our terraform plan suddenly showed unexpected changes in an Amazon EC2 security group, even though no Terraform code was changed.
+
+ Task:
+ I had to identify why Terraform was detecting unexpected changes and ensure deployment wouldn’t break production access.
+
+ Action:
+ I checked recent PRs and state changes, then verified the security group in Amazon Web Services console. I found that someone had manually opened a port during debugging and forgot to revert it. Since it was temporary, we removed the manual change and re-ran Terraform plan.
+
+ Result:
+ Deployment worked successfully, and afterward we restricted manual production changes and ensured all infra updates go through Terraform PRs to avoid future drift issues.
+ 
+21. During refresh/import it doesn’t write code, right? Then how do we prevent overwrite later?
+ Import only brings infrastructure into state. We still need to manually write accurate Terraform configuration to match the real infrastructure, otherwise future apply operations may unintentionally overwrite existing settings.
+
+
+
+
