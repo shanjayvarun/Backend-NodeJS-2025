@@ -1,6 +1,6 @@
 # Special Terraform block used to expose values after terraform apply.
 output "current_instance_ip" {
-  value = module.compute.instance_ip
+  value = length(module.compute) > 0 ? module.compute[0].instance_ip : null
 }
 
 output "s3_bucket_name" {

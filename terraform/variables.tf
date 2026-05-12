@@ -1,7 +1,15 @@
-variable "aws_region" {}
+variable "aws_region" {
+  default = "us-east-1"
+}
 
-variable "instance_type" {}
+variable "instance_type" {
+  default = "t3.micro"
+}
 
-variable "project_name" {}
+variable "project_name" {
+  default = "crms-default"
+}
 
-variable "key_name" {}
+variable "key_name" {
+  default = "shanjay-key"
+}
