@@ -1,4 +1,5 @@
 resource "aws_s3_bucket" "tf_state" {
+  count  = terraform.workspace == "default" ? 1 : 0
   bucket = "crms-tf-state-greta-2026"
   lifecycle {
     prevent_destroy = false
@@ -6,6 +7,7 @@ resource "aws_s3_bucket" "tf_state" {
 }
 
 resource "aws_dynamodb_table" "tf_state_lock" {
+  count  = terraform.workspace == "default" ? 1 : 0
   name = "CRMS-tf-state-lock"
   # AWS charges only when table is used.
   billing_mode = "PAY_PER_REQUEST" # (or) PROVISIONED - But that requires fixed capacity setup.
