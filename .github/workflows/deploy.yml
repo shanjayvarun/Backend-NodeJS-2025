@@ -1,63 +1,3 @@
-# name: Deploy CRMS to AWS
-
-# on:
-#   push:
-#     branches: [ crm-microservices ]
-
-# jobs:
-#   deploy:
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       - name: Deploy via SSH
-#         uses: appleboy/ssh-action@master
-#         with:
-#           host: ${{ secrets.HOST }}
-#           username: ${{ secrets.USER }}
-#           key: ${{ secrets.EC2_SSH_KEY }}
-#           script: |
-#             # 1. Wait for User Data to finish installing Git and Docker
-#             echo "Waiting for system setup to complete..."
-#             until [ -f /var/lib/cloud/instance/boot-finished ]; do
-#               sleep 5
-#             done
-#             echo "System setup finished. Starting deployment..."
-
-#             # 2. Prepare Project Directory
-#             mkdir -p /home/ec2-user/crms-backend
-#             cd /home/ec2-user/crms-backend
-
-#             # 3. Clone or Update Repository
-#             if [ ! -d ".git" ]; then
-#               git clone -b crm-microservices https://github.com/shanjayvarun/crms-backend.git .
-#             else
-#               git fetch origin
-#               git checkout crm-microservices
-#               git reset --hard origin/crm-microservices
-#             fi
-
-#             # 4. Create Service Folders and Inject ENV Secrets
-#             # We use quoted 'EOF' to prevent the shell from mangling special characters in passwords
-#             mkdir -p services/auth-service
-#             mkdir -p services/user-service
-
-#             cat <<'EOF' > services/auth-service/.env.prod
-#             ${{ secrets.AUTH_SERVICE_ENV }}
-#             EOF
-
-#             cat <<'EOF' > services/user-service/.env.prod
-#             ${{ secrets.USER_SERVICE_ENV }}
-#             EOF
-
-#             # 5. Verify Files Exist (For logs)
-#             echo "Checking deployment files..."
-#             ls -la services/auth-service/.env.prod
-#             ls -la services/user-service/.env.prod
-
-#             # 6. Docker Deployment
-#             # Using sudo ensures we don't hit permission errors before the group change takes effect
-#             sudo docker compose up -d --build
-
 name: Infrastructure and App Deployment
 
 on:
@@ -72,7 +12,7 @@ jobs:
       run:
         working-directory: ./terraform
     outputs:
-      ec2_public_ip: ${{ steps.set-ip.outputs.ip }} # Pass IP to the next job
+      ec2_public_ip: ${{ steps.set-ip.outputs.ip }}
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -87,6 +27,12 @@ jobs:
           terraform init
           terraform workspace select dev || terraform workspace new dev
 
+      - name: Terraform Validate and Formating
+        run: |
+          terraform validate
+          terraform fmt -check
+          echo "Terraform configuration is valid and properly formatted."
+
       - name: Create tfvars file
         run: |
           mkdir -p tfvars
@@ -95,28 +41,23 @@ jobs:
           ${{ secrets.DEV_TFVARS }}
           EOF
 
-      - name: Terraform Plan
-        run: terraform plan -var-file="./tfvars/dev.tfvars"
-
       - name: Terraform Apply
         run: |
-          WORKSPACE=$(terraform workspace show)
-          terraform apply -auto-approve -var-file="./tfvars/${WORKSPACE}.tfvars"
+          terraform apply -auto-approve -var-file="./tfvars/dev.tfvars"
 
       - name: Get EC2 IP
         id: set-ip
-        # This grabs the IP from Terraform output so you don't need a hardcoded HOST secret
         run: echo "ip=$(terraform output -raw ec2_public_ip)" >> $GITHUB_OUTPUT
 
   deploy-app:
     name: "Application (SSH)"
-    needs: terraform # Only run if Terraform succeeds
+    needs: terraform
     runs-on: ubuntu-latest
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ needs.terraform.outputs.ec2_public_ip }} # Uses dynamic IP!
+          host: ${{ needs.terraform.outputs.ec2_public_ip }}
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
@@ -162,3 +103,6 @@ jobs:
             # 6. Docker Deployment
             # Using sudo ensures we don't hit permission errors before the group change takes effect
             sudo docker compose up -d --build
+            sudo docker image prune -f
+            echo "Docker deployment cleaned up."
+            echo "Deployment complete on IP: ${{ needs.terraform.outputs.ec2_public_ip }}"
