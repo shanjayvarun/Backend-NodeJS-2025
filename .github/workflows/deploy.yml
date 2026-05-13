@@ -86,19 +86,18 @@ jobs:
         run: |
           terraform init
           terraform workspace select dev || terraform workspace new dev
+          echo "CURRENT_WORKSPACE=$(terraform workspace show)" >> $GITHUB_ENV
 
-      - name: Create tfvars file
+      - name: Verify Workspace
         run: |
-          mkdir -p tfvars
-          echo "${{ secrets.DEV_TFVARS }}" > tfvars/${WORKSPACE}.tfvars
-
-      - name: Terraform Plan
-        run: terraform plan -var-file="tfvars/${WORKSPACE}.tfvars"
+          if [ -z "${{ env.CURRENT_WORKSPACE }}" ]; then
+            echo "ERROR: CURRENT_WORKSPACE is not set!"
+            exit 1
+          fi
+          echo "Operating in workspace: ${{ env.CURRENT_WORKSPACE }}"
 
       - name: Terraform Apply
-        run: |
-          WORKSPACE=$(terraform workspace show)
-          terraform apply -auto-approve -var-file="tfvars/${WORKSPACE}.tfvars"
+        run: terraform apply -auto-approve -var-file="tfvars/${{ env.CURRENT_WORKSPACE }}.tfvars"
 
       - name: Get EC2 IP
         id: set-ip
