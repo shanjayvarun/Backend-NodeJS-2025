@@ -87,10 +87,18 @@ jobs:
           terraform init
           terraform workspace select dev || terraform workspace new dev
 
+      - name: Create tfvars file
+        run: |
+          mkdir -p tfvars
+          echo "${{ secrets.DEV_TFVARS }}" > tfvars/${WORKSPACE}.tfvars
+
+      - name: Terraform Plan
+        run: terraform plan -var-file="tfvars/${WORKSPACE}.tfvars"
+
       - name: Terraform Apply
         run: |
           WORKSPACE=$(terraform workspace show)
-          terraform apply -auto-approve -var-file="./tfvars/${WORKSPACE}.tfvars"
+          terraform apply -auto-approve -var-file="tfvars/${WORKSPACE}.tfvars"
 
       - name: Get EC2 IP
         id: set-ip
