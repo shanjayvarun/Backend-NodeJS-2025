@@ -97,7 +97,7 @@ jobs:
           echo "Operating in workspace: ${{ env.CURRENT_WORKSPACE }}"
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve -var-file="tfvars/${{ env.CURRENT_WORKSPACE }}.tfvars"
+        run: terraform apply -auto-approve -var-file="./tfvars/${{ env.CURRENT_WORKSPACE }}.tfvars"
 
       - name: Get EC2 IP
         id: set-ip
