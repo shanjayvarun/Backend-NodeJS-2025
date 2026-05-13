@@ -85,7 +85,7 @@ jobs:
           terraform workspace select dev || terraform workspace new dev
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve -var-file="dev.tfvars"
+        run: terraform apply -auto-approve -var-file="./tfvars/dev.tfvars"
 
       - name: Get EC2 IP
         id: set-ip
