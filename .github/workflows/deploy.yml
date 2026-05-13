@@ -62,12 +62,15 @@ name: Infrastructure and App Deployment
 
 on:
   push:
-    branches: [ crm-microservices ]
+    branches: [crm-microservices]
 
 jobs:
   terraform:
     name: "Infrastructure (Terraform)"
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./terraform
     outputs:
       ec2_public_ip: ${{ steps.set-ip.outputs.ip }} # Pass IP to the next job
     env:
@@ -85,7 +88,9 @@ jobs:
           terraform workspace select dev || terraform workspace new dev
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve -var-file="./tfvars/dev.tfvars"
+        run: |
+          WORKSPACE=$(terraform workspace show)
+          terraform apply -auto-approve -var-file="./tfvars/${WORKSPACE}.tfvars"
 
       - name: Get EC2 IP
         id: set-ip
