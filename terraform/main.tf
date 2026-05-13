@@ -11,14 +11,14 @@ terraform {
     }
   }
 
-  # Tells Terraform to Store the Sate Remotely in S3 Instead of Local machine
-  backend "s3" {
-    bucket         = "crms-tf-state-files-dont-delete" # S3 bucket storing state file.
-    key            = "backend/s3/terraform.tfstate"    # path inside the bucket
-    region         = "us-east-1"                       # region whetehr the bucket exists
-    dynamodb_table = "crms-tf-state-lock-dont-delete"  # enables state locking. terraform uses this table when apply plan and destroy operations
-    encrypt        = "true"                            # encrypts terraform state file in s3
-  }
+  # # Tells Terraform to Store the Sate Remotely in S3 Instead of Local machine
+  # backend "s3" {
+  #   bucket       = "crms-tf-state-files-dont-delete"
+  #   key          = "backend/s3/terraform.tfstate"
+  #   region       = "us-east-1"
+  #   encrypt      = true
+  #   use_lockfile = true
+  # }
 }
 
 # Configures AWS Connection which we Declared Above

@@ -1,5 +1,5 @@
 # Special Terraform block used to expose values after terraform apply.
-output "current_instance_ip" {
+output "ec2_public_ip" {
   value = length(module.compute) > 0 ? module.compute[0].instance_ip : null
 }
 
