@@ -1,21 +1,110 @@
-name: Deploy CRMS to AWS
+# name: Deploy CRMS to AWS
+
+# on:
+#   push:
+#     branches: [ crm-microservices ]
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Deploy via SSH
+#         uses: appleboy/ssh-action@master
+#         with:
+#           host: ${{ secrets.HOST }}
+#           username: ${{ secrets.USER }}
+#           key: ${{ secrets.EC2_SSH_KEY }}
+#           script: |
+#             # 1. Wait for User Data to finish installing Git and Docker
+#             echo "Waiting for system setup to complete..."
+#             until [ -f /var/lib/cloud/instance/boot-finished ]; do
+#               sleep 5
+#             done
+#             echo "System setup finished. Starting deployment..."
+
+#             # 2. Prepare Project Directory
+#             mkdir -p /home/ec2-user/crms-backend
+#             cd /home/ec2-user/crms-backend
+
+#             # 3. Clone or Update Repository
+#             if [ ! -d ".git" ]; then
+#               git clone -b crm-microservices https://github.com/shanjayvarun/crms-backend.git .
+#             else
+#               git fetch origin
+#               git checkout crm-microservices
+#               git reset --hard origin/crm-microservices
+#             fi
+
+#             # 4. Create Service Folders and Inject ENV Secrets
+#             # We use quoted 'EOF' to prevent the shell from mangling special characters in passwords
+#             mkdir -p services/auth-service
+#             mkdir -p services/user-service
+
+#             cat <<'EOF' > services/auth-service/.env.prod
+#             ${{ secrets.AUTH_SERVICE_ENV }}
+#             EOF
+
+#             cat <<'EOF' > services/user-service/.env.prod
+#             ${{ secrets.USER_SERVICE_ENV }}
+#             EOF
+
+#             # 5. Verify Files Exist (For logs)
+#             echo "Checking deployment files..."
+#             ls -la services/auth-service/.env.prod
+#             ls -la services/user-service/.env.prod
+
+#             # 6. Docker Deployment
+#             # Using sudo ensures we don't hit permission errors before the group change takes effect
+#             sudo docker compose up -d --build
+
+name: Infrastructure and App Deployment
 
 on:
   push:
     branches: [ crm-microservices ]
 
 jobs:
-  deploy:
+  terraform:
+    name: "Infrastructure (Terraform)"
     runs-on: ubuntu-latest
+    outputs:
+      ec2_public_ip: ${{ steps.set-ip.outputs.ip }} # Pass IP to the next job
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION}}
 
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init & Select Workspace
+        run: |
+          terraform init
+          terraform workspace select dev || terraform workspace new dev
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -var-file="dev.tfvars"
+
+      - name: Get EC2 IP
+        id: set-ip
+        # This grabs the IP from Terraform output so you don't need a hardcoded HOST secret
+        run: echo "ip=$(terraform output -raw ec2_public_ip)" >> $GITHUB_OUTPUT
+
+  deploy-app:
+    name: "Application (SSH)"
+    needs: terraform # Only run if Terraform succeeds
+    runs-on: ubuntu-latest
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
+          host: ${{ needs.terraform.outputs.ec2_public_ip }} # Uses dynamic IP!
+          username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            echo "Deploying to dynamic IP: ${{ needs.terraform.outputs.ec2_public_ip }}"
             # 1. Wait for User Data to finish installing Git and Docker
             echo "Waiting for system setup to complete..."
             until [ -f /var/lib/cloud/instance/boot-finished ]; do
