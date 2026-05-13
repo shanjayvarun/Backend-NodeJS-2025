@@ -12,13 +12,13 @@ terraform {
   }
 
   # # Tells Terraform to Store the Sate Remotely in S3 Instead of Local machine
-  # backend "s3" {
-  #   bucket       = "crms-tf-state-files-dont-delete"
-  #   key          = "backend/s3/terraform.tfstate"
-  #   region       = "us-east-1"
-  #   encrypt      = true
-  #   use_lockfile = true
-  # }
+  backend "s3" {
+    bucket       = "crms-tf-state-files-dont-delete"
+    key          = "backend/s3/terraform.tfstate"
+    region       = "us-east-1"
+    encrypt      = true
+    use_lockfile = true
+  }
 }
 
 # Configures AWS Connection which we Declared Above
