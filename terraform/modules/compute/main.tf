@@ -48,8 +48,8 @@ resource "aws_internet_gateway" "crms_igw" {
 }
 
 resource "aws_subnet" "crms_subnet" {
-  vpc_id     = aws_vpc.crms_vpc.id
-  cidr_block = "10.0.1.0/24"
+  vpc_id                  = aws_vpc.crms_vpc.id
+  cidr_block              = "10.0.1.0/24"
   map_public_ip_on_launch = true
   tags = {
     Name        = "${var.project_name}-subnet-${terraform.workspace}"
@@ -108,7 +108,12 @@ resource "aws_instance" "crms_server" {
   subnet_id                   = aws_subnet.crms_subnet.id
   vpc_security_group_ids      = [aws_security_group.crms_sg.id]
   user_data_replace_on_change = true
-  user_data                   = <<-EOF
+  root_block_device {
+    volume_size           = 20 
+    volume_type           = "gp3"
+    delete_on_termination = true
+  }
+  user_data = <<-EOF
               #!/bin/bash
               exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
               dnf update -y
