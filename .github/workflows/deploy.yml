@@ -102,6 +102,7 @@ jobs:
 
             # 6. Docker Deployment
             # Using sudo ensures we don't hit permission errors before the group change takes effect
+            sudo docker system prune -af --volumes
             sudo docker compose up -d --build
             sudo docker image prune -f
             echo "Docker deployment cleaned up."
