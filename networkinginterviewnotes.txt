@@ -1,0 +1,78 @@
+what is this 10.0.0.0/16 is htis a standard ?
+
+VPC
+ VPC is basically our own private network inside Amazon Web Services where we launch resources.
+ In real projects, we usually don’t rely on the default VPC because it’s very open and preconfigured for quick setup.
+ We create our own custom VPC so that we can control IP ranges, subnets, routing, and security boundaries properly.
+ For example, in one of our deployments, we had application servers, Redis, and database instances running inside a custom VPC so everything was isolated properly.
+
+Why do we need VPC?
+ Default VPC is okay for testing, but not ideal for production.
+ It already comes with public subnets and internet access configuration, and if someone accidentally opens security groups like port 22 to 0.0.0.0/0, the instance becomes publicly reachable.
+ By default, resources may be launched in AWS default VPC, which is preconfigured for convenience.
+ In production, we create custom VPCs to have better control over security, network isolation, public/private segmentation, and routing behavior.
+
+What is a Subnet?
+ A subnet is a smaller network segment inside a VPC created by dividing the VPC CIDR block into smaller IP ranges.
+ It helps us organize resources based on access requirements such as public or private access.
+ Eg: VPC: 10.0.0.0/16
+     Subnet: 10.0.1.0/24
+  Load balancer in public subnet
+  Backend services in private subnet
+  Database in private subnet
+ This helps us avoid exposing unnecessary resources to the internet.
+
+What is Public Subnet?
+ Public subnet is used for resources that need internet access.
+ Resources placed here can be internet accessible when their route table has access to Internet Gateway and if they also have a public IP and proper security group rules.
+ Used for: Application Load Balancers, Bastion Hosts, Public-facing web servers
+
+What is Private Subnet?
+ Private subnet is for internal services that shouldn’t be exposed directly.
+ In my experience, backend APIs, Redis, Kafka, databases, and internal services are usually deployed here.
+ They can communicate internally but cannot be accessed directly from the internet.
+
+Internet Gateway
+ Internet Gateway allows communication between public resources in our VPC and the internet.
+ For example, if our load balancer needs to receive requests from users, that traffic comes through Internet Gateway.
+
+Route Table
+ Route table decides where traffic should go.
+ For eg: Internal traffic stays inside VPC
+         Internet traffic goes to Internet Gateway
+         Private subnet outbound traffic may go through NAT Gateway
+ In Terraform, we usually create separate route tables for public and private subnets.
+
+NAT Gateway
+ NAT Gateway maintains translation mappings/state for outbound connections.
+ Our private servers may need internet access for things like: Installing packages, Pulling Docker images, OS updates
+ Since private instances shouldn’t be publicly exposed, we use NAT Gateway for outbound-only internet access.
+
+Security Group
+ Security Group acts like instance-level firewall.
+ We control which ports should be opened.
+ 80/443 for application traffic and 22 usually restricted to specific IPs or sometimes avoided completely if we use SSM.
+
+Explain architecture you worked on Networking
+ In my recent project, it was more of a standalone B2B application, so traffic was relatively low compared to large consumer applications. We didn’t use a Load Balancer because the traffic volume didn’t justify that complexity.
+ We had our application deployed on EC2 instances inside Amazon Web Services.
+ The networking layer was already set up with VPC and subnets.
+ Our application server was hosted in EC2, and depending on the environment, we used appropriate security group rules to allow application access.
+ We had database services in private subnets so they were not directly exposed to the internet.
+ We also used Redis for caching/session-related use cases, which was also kept private.
+ For infrastructure changes, I mainly worked with Terraform modules for EC2 provisioning, security groups, IAM roles, environment variables, and deployment-related updates.
+ ince it was a B2B platform used mainly by client managers for billing, reports, and plan management, the traffic was predictable and relatively low, so a simpler architecture worked well for us.
+
+Explain EC2 Networking Flow of a project
+ I launched an EC2 instance inside a VPC. It is placed in a private subnet and has a private IP address like 10.0.1.x.
+ If my private EC2 instance wants to download Docker images (for example, using docker images from docker hub), it sends outbound traffic. AWS checks the route table associated with that private subnet to determine where the traffic should go.
+ Since the destination is outside the VPC (0.0.0.0/0), the route table forwards the traffic to the NAT Gateway.
+ The NAT Gateway performs Network Address Translation by mapping the private IP of the EC2 instance to its own public IP address.
+ Then, the NAT Gateway sends the request to the Internet Gateway, which connects the VPC to the public internet.
+ Through the Internet Gateway, the request reaches Docker Hub. Docker Hub sees the request coming from the NAT Gateway’s public IP and sends the Docker image response back to that same public IP.
+ The response again comes through the Internet Gateway and reaches the NAT Gateway. Since the NAT Gateway already knows which private EC2 instance initiated the request, it translates the traffic back and sends it to the correct private IP address of the EC2 instance.
+ 
+If interviewer asks “Did you create VPC from scratch?”
+In my project, The core VPC architecture and CIDR ranges were managed by our Networking Lead/TL to ensure compliance. My responsibility was deploying the microservices into the assigned private subnets and configuring the Security Groups to allow traffic from the Load Balancer..
+
+

@@ -13,8 +13,8 @@ resource "aws_iam_role" "ec2_role" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Action = "sts:AssumeRole"
-      Effect = "Allow"
+      Action    = "sts:AssumeRole"
+      Effect    = "Allow"
       Principal = { Service = "ec2.amazonaws.com" }
     }]
   })
@@ -30,10 +30,54 @@ resource "aws_iam_instance_profile" "ec2_profile" {
   role = aws_iam_role.ec2_role.name
 }
 
+resource "aws_vpc" "crms_vpc" {
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_hostnames = true
+  tags = {
+    Name        = "${var.project_name}-vpc-${terraform.workspace}"
+    Environment = terraform.workspace
+  }
+}
+
+resource "aws_internet_gateway" "crms_igw" {
+  vpc_id = aws_vpc.crms_vpc.id
+  tags = {
+    Name        = "${var.project_name}-igw-${terraform.workspace}"
+    Environment = terraform.workspace
+  }
+}
+
+resource "aws_subnet" "crms_subnet" {
+  vpc_id     = aws_vpc.crms_vpc.id
+  cidr_block = "10.0.1.0/24"
+  map_public_ip_on_launch = true
+  tags = {
+    Name        = "${var.project_name}-subnet-${terraform.workspace}"
+    Environment = terraform.workspace
+  }
+}
+
+resource "aws_route_table" "crms_route_table" {
+  vpc_id = aws_vpc.crms_vpc.id
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.crms_igw.id
+  }
+  tags = {
+    Name        = "${var.project_name}-route-table-${terraform.workspace}"
+    Environment = terraform.workspace
+  }
+}
+
+resource "aws_route_table_association" "crms_route_table_assoc" {
+  subnet_id      = aws_subnet.crms_subnet.id
+  route_table_id = aws_route_table.crms_route_table.id
+}
+
 resource "aws_security_group" "crms_sg" {
   name        = "${var.project_name}-sg-${terraform.workspace}"
   description = "Security group for CRMS"
-  
+  vpc_id      = aws_vpc.crms_vpc.id
   ingress {
     from_port   = 80
     to_port     = 80
@@ -57,14 +101,14 @@ resource "aws_security_group" "crms_sg" {
 }
 
 resource "aws_instance" "crms_server" {
-  ami                    = data.aws_ami.amazon_linux_2023.id # Dynamic AMI!
-  instance_type          = var.instance_type
-  key_name               = var.key_name
-  iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
-  vpc_security_group_ids = [aws_security_group.crms_sg.id]
-
+  ami                         = data.aws_ami.amazon_linux_2023.id # Dynamic AMI!
+  instance_type               = var.instance_type
+  key_name                    = var.key_name
+  iam_instance_profile        = aws_iam_instance_profile.ec2_profile.name
+  subnet_id                   = aws_subnet.crms_subnet.id
+  vpc_security_group_ids      = [aws_security_group.crms_sg.id]
   user_data_replace_on_change = true
-  user_data = <<-EOF
+  user_data                   = <<-EOF
               #!/bin/bash
               exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
               dnf update -y
