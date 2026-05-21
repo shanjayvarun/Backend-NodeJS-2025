@@ -11,10 +11,12 @@ services:
       - ./services/auth-service/.env.prod
     restart: always
     logging:
-      driver: json-file
+      driver: awslogs
       options:
-        max-size: "10m"
-        max-file: "3"
+        awslogs-region: "${AWS_REGION:-us-east-1}"
+        awslogs-group: "${CLOUDWATCH_LOG_GROUP:-CRMS-DEV-dev-docker}"
+        awslogs-stream: "auth-service"
+        awslogs-create-group: "true"
 
   # 2. USER SERVICES
   user-service:
@@ -28,10 +30,12 @@ services:
       - ./services/user-service/.env.prod
     restart: always
     logging:
-      driver: json-file
+      driver: awslogs
       options:
-        max-size: "10m"
-        max-file: "3"
+        awslogs-region: "${AWS_REGION:-us-east-1}"
+        awslogs-group: "${CLOUDWATCH_LOG_GROUP:-CRMS-DEV-dev-docker}"
+        awslogs-stream: "user-service"
+        awslogs-create-group: "true"
 
   # 3. NGINX GATEWAY
   nginx:
@@ -45,7 +49,9 @@ services:
       - auth-service
       - user-service
     logging:
-      driver: json-file
+      driver: awslogs
       options:
-        max-size: "10m"
-        max-file: "3"
+        awslogs-region: "${AWS_REGION:-us-east-1}"
+        awslogs-group: "${CLOUDWATCH_LOG_GROUP:-CRMS-DEV-dev-docker}"
+        awslogs-stream: "nginx-gateway"
+        awslogs-create-group: "true"

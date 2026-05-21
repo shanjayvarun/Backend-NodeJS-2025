@@ -5,7 +5,7 @@ const rateLimit = require('express-rate-limit');
 const mongoose = require('mongoose');
 const authRoutes = require('./routes/auth.routes');
 const environment = require('./config/env');
-const { attachRequestId } = require('./middlewares/request.middleware');
+const { attachRequestId, logRequest } = require('./middlewares/request.middleware');
 const { notFoundHandler, errorHandler } = require('./middlewares/error.middleware');
 
 const app = express();
@@ -23,6 +23,7 @@ app.use(helmet());
 app.use(express.json());
 app.use(cors(corsOptions));
 app.use(attachRequestId);
+app.use(logRequest);
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 100 }));
 
 app.get('/health', (_, res) => {

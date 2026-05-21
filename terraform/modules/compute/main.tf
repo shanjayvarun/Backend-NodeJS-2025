@@ -143,9 +143,9 @@ resource "aws_instance" "crms_server" {
                           "retention_in_days": 7
                         },
                         {
-                          "file_path": "/var/lib/docker/containers/*/*.log",
-                          "log_group_name": "${var.project_name}-${terraform.workspace}-docker",
-                          "log_stream_name": "{instance_id}/{filename}",
+                          "file_path": "/var/log/messages",
+                          "log_group_name": "${var.project_name}-${terraform.workspace}-ec2-system",
+                          "log_stream_name": "{instance_id}",
                           "retention_in_days": 7
                         }
                       ]

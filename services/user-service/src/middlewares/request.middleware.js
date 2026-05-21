@@ -7,6 +7,31 @@ const attachRequestId = (req, res, next) => {
   return next();
 };
 
+const logRequest = (req, res, next) => {
+  const startedAt = process.hrtime.bigint();
+
+  res.on('finish', () => {
+    const durationMs = Number(process.hrtime.bigint() - startedAt) / 1e6;
+
+    console.log(
+      JSON.stringify({
+        type: 'http_request',
+        requestId: req.requestId,
+        service: 'user-service',
+        method: req.method,
+        path: req.originalUrl,
+        statusCode: res.statusCode,
+        durationMs: Math.round(durationMs),
+        ip: req.ip,
+        userAgent: req.get('user-agent'),
+      }),
+    );
+  });
+
+  return next();
+};
+
 module.exports = {
   attachRequestId,
+  logRequest,
 };
