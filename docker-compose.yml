@@ -1,5 +1,5 @@
 services:
- # 1. AUTH SERVICES
+  # 1. AUTH SERVICES
   auth-service:
     build:
       context: ./services/auth-service
@@ -10,8 +10,13 @@ services:
     env_file:
       - ./services/auth-service/.env.prod
     restart: always
+    logging:
+      driver: syslog
+      options:
+        syslog-address: "unixgram:///dev/log"
+        tag: "docker/auth-service"
 
- # 2. USER SERVICES
+  # 2. USER SERVICES
   user-service:
     build:
       context: ./services/user-service
@@ -22,6 +27,11 @@ services:
     env_file:
       - ./services/user-service/.env.prod
     restart: always
+    logging:
+      driver: syslog
+      options:
+        syslog-address: "unixgram:///dev/log"
+        tag: "docker/user-service"
 
   # 3. NGINX GATEWAY
   nginx:
@@ -34,3 +44,8 @@ services:
     depends_on:
       - auth-service
       - user-service
+    logging:
+      driver: syslog
+      options:
+        syslog-address: "unixgram:///dev/log"
+        tag: "docker/nginx-gateway"

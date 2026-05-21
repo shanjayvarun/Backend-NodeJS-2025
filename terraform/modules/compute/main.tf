@@ -20,9 +20,9 @@ resource "aws_iam_role" "ec2_role" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "ssm_policy" {
+resource "aws_iam_role_policy_attachment" "_policy" {
   role       = aws_iam_role.ec2_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
 }
 
 resource "aws_iam_instance_profile" "ec2_profile" {
@@ -109,7 +109,7 @@ resource "aws_instance" "crms_server" {
   vpc_security_group_ids      = [aws_security_group.crms_sg.id]
   user_data_replace_on_change = true
   root_block_device {
-    volume_size           = 20 
+    volume_size           = 30 
     volume_type           = "gp3"
     delete_on_termination = true
   }
@@ -117,13 +117,47 @@ resource "aws_instance" "crms_server" {
               #!/bin/bash
               exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
               dnf update -y
-              dnf install -y git docker
+              dnf install -y git docker amazon-cloudwatch-agent
               systemctl start docker
               systemctl enable docker
               usermod -aG docker ec2-user
               mkdir -p /usr/local/lib/docker/cli-plugins/
               curl -SL https://github.com/docker/compose/releases/download/v2.26.1/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose
               chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+
+              mkdir -p /opt/aws/amazon-cloudwatch-agent/etc/
+              cat << 'JSON' > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+              {
+                "agent": {
+                  "metrics_collection_interval": 60,
+                  "run_as_user": "root"
+                },
+                "logs": {
+                  "logs_collected": {
+                    "files": {
+                      "collect_list": [
+                        {
+                          "file_path": "/var/log/user-data.log",
+                          "log_group_name": "${var.project_name}-${terraform.workspace}-ec2-user-data",
+                          "log_stream_name": "{instance_id}",
+                          "retention_in_days": 7
+                        },
+                        {
+                          "file_path": "/var/log/messages",
+                          "log_group_name": "${var.project_name}-${terraform.workspace}-ec2-syslog",
+                          "log_stream_name": "{instance_id}",
+                          "retention_in_days": 7
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+              JSON
+
+              # Start the CloudWatch agent with our defined parameters
+              amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+
               EOF
 
   tags = {

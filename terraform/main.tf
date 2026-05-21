@@ -27,17 +27,17 @@ provider "aws" {
   region = var.aws_region
 }
 
-# module "compute" {
-#   count         = terraform.workspace == "default" ? 0 : 1
-#   source        = "./modules/compute"
-#   project_name  = var.project_name
-#   key_name      = var.key_name
-#   instance_type = var.instance_type
-# }
-
-module "lambda" {
-  count        = terraform.workspace == "default" ? 0 : 1
-  source       = "./modules/lambda"
-  project_name = var.project_name
+module "compute" {
+  count         = terraform.workspace == "default" ? 0 : 1
+  source        = "./modules/compute"
+  project_name  = var.project_name
+  key_name      = var.key_name
+  instance_type = var.instance_type
 }
+
+# module "lambda" {
+#   count        = terraform.workspace == "default" ? 0 : 1
+#   source       = "./modules/lambda"
+#   project_name = var.project_name
+# }
 
