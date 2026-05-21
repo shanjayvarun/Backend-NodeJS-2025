@@ -11,9 +11,10 @@ services:
       - ./services/auth-service/.env.prod
     restart: always
     logging:
-      driver: journald
+      driver: json-file
       options:
-        tag: "docker/auth-service"
+        max-size: "10m"
+        max-file: "3"
 
   # 2. USER SERVICES
   user-service:
@@ -27,9 +28,10 @@ services:
       - ./services/user-service/.env.prod
     restart: always
     logging:
-      driver: journald
+      driver: json-file
       options:
-        tag: "docker/user-service"
+        max-size: "10m"
+        max-file: "3"
 
   # 3. NGINX GATEWAY
   nginx:
@@ -43,6 +45,7 @@ services:
       - auth-service
       - user-service
     logging:
-      driver: journald
+      driver: json-file
       options:
-        tag: "docker/nginx-gateway"
+        max-size: "10m"
+        max-file: "3"
