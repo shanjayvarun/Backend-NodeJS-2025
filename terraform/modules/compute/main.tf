@@ -144,12 +144,20 @@ resource "aws_instance" "crms_server" {
                         },
                         {
                           "file_path": "/var/log/messages",
-                          "log_group_name": "${var.project_name}-${terraform.workspace}-ec2-syslog",
+                          "log_group_name": "${var.project_name}-${terraform.workspace}-ec2-loi",
                           "log_stream_name": "{instance_id}",
                           "retention_in_days": 7
                         }
                       ]
                     }
+                  }
+                  "windows_event_log": {},
+                  "journal": {
+                    "max_log_size": 104857600,
+                    "retention_in_days": 7,
+                    "services": ["docker"],
+                    "log_group_name": "${var.project_name}-${terraform.workspace}-ec2-syslog",
+                    "log_stream_name": "{instance_id}"
                   }
                 }
               }
