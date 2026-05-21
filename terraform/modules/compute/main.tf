@@ -150,7 +150,7 @@ resource "aws_instance" "crms_server" {
                         }
                       ]
                     }
-                  }
+                  },
                   "windows_event_log": {},
                   "journal": {
                     "max_log_size": 104857600,
