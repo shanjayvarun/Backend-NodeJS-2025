@@ -11,9 +11,8 @@ services:
       - ./services/auth-service/.env.prod
     restart: always
     logging:
-      driver: syslog
+      driver: journald
       options:
-        syslog-address: "unixgram:///dev/log"
         tag: "docker/auth-service"
 
   # 2. USER SERVICES
@@ -28,9 +27,8 @@ services:
       - ./services/user-service/.env.prod
     restart: always
     logging:
-      driver: syslog
+      driver: journald
       options:
-        syslog-address: "unixgram:///dev/log"
         tag: "docker/user-service"
 
   # 3. NGINX GATEWAY
@@ -45,7 +43,6 @@ services:
       - auth-service
       - user-service
     logging:
-      driver: syslog
+      driver: journald
       options:
-        syslog-address: "unixgram:///dev/log"
         tag: "docker/nginx-gateway"
