@@ -141,28 +141,20 @@ resource "aws_instance" "crms_server" {
                           "log_group_name": "${var.project_name}-${terraform.workspace}-ec2-user-data",
                           "log_stream_name": "{instance_id}",
                           "retention_in_days": 7
-                        },
-                        {
-                          "file_path": "/var/log/messages",
-                          "log_group_name": "${var.project_name}-${terraform.workspace}-ec2-loi",
-                          "log_stream_name": "{instance_id}",
-                          "retention_in_days": 7
                         }
                       ]
+                    },
+                    "journal": {
+                      "max_log_size": 104857600,
+                      "retention_in_days": 7,
+                      "services": ["docker"],
+                      "log_group_name": "${var.project_name}-${terraform.workspace}-ec2-syslog",
+                      "log_stream_name": "{instance_id}"
                     }
-                  },
-                  "windows_event_log": {},
-                  "journal": {
-                    "max_log_size": 104857600,
-                    "retention_in_days": 7,
-                    "services": ["docker"],
-                    "log_group_name": "${var.project_name}-${terraform.workspace}-ec2-syslog",
-                    "log_stream_name": "{instance_id}"
                   }
                 }
               }
               JSON
-
               # Start the CloudWatch agent with our defined parameters
               amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
 
