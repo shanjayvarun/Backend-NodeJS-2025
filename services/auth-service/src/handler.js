@@ -1,12 +1,14 @@
+/* eslint-disable node/no-extraneous-require */
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const mongoose = require('mongoose');
 const authRoutes = require('./routes/auth.routes');
 const environment = require('./config/env');
 const { attachRequestId, logRequest } = require('./middlewares/request.middleware');
 const { notFoundHandler, errorHandler } = require('./middlewares/error.middleware');
+const { ListTablesCommand } = require('@aws-sdk/client-dynamodb');
+const { ddbClient } = require('./config/dynamo');
 
 const app = express();
 const corsOptions = {
@@ -34,13 +36,25 @@ app.get('/health', (_, res) => {
   });
 });
 
-app.get('/ready', (_, res) => {
-  const isReady = mongoose.connection.readyState === 1;
-  res.status(isReady ? 200 : 503).json({
-    status: isReady,
-    service: environment.serviceName,
-    database: isReady ? 'connected' : 'disconnected',
-  });
+app.get('/ready', async (_, res) => {
+  try {
+    // We send a lightweight API request to list tables to prove network connectivity
+    await ddbClient.send(new ListTablesCommand({ Limit: 1 }));
+    res.status(200).json({
+      status: true,
+      service: environment.serviceName,
+      database: 'connected (DynamoDB)',
+    });
+  } catch (error) {
+    console.error('Readiness probe failed to reach DynamoDB:', error.message);
+
+    res.status(503).json({
+      status: false,
+      service: environment.serviceName,
+      database: 'disconnected',
+      error: error.message
+    });
+  }
 });
 
 app.use('/api/auth', authRoutes);

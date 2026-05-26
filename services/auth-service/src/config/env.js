@@ -24,7 +24,7 @@ module.exports = {
   port: process.env.PORT,
   version: process.env.VERSION,
   serviceName: process.env.SERVICE_NAME || 'auth-service',
-  mongoUri: getRequiredEnv('MONGO_URI'),
+  mongoUri: process.env.MONGO_URI || null,
   corsOrigins: getCorsOrigins(),
   jwt: {
     accessSecret: getRequiredEnv('JWT_ACCESS_SECRET'),
@@ -33,4 +33,7 @@ module.exports = {
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
     algorithm: process.env.JWT_ALGO || 'HS256',
   },
+  dynamodbUsersTable: getRequiredEnv('DYNAMODB_USERS_TABLE'),
+  dynamodbUserIdIndexName: process.env.DYNAMODB_USER_ID_INDEX_NAME || 'UserIdIndex',
+  awsRegion: process.env.AWS_REGION || 'us-east-1',
 };

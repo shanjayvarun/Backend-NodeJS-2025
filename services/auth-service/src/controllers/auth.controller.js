@@ -1,21 +1,9 @@
+/* eslint-disable node/no-unsupported-features/es-syntax */
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const userService = require('../services/user.service');
 const environment = require('../config/env');
 const { sendSuccess, sendError } = require('../utils/response.util');
-
-const getSafeUserData = (data) => {
-  const allowedFields = ['name', 'email', 'password', 'role', 'profilePicture', 'phone', 'bio', 'userStatus'];
-  const payload = {};
-
-  allowedFields.forEach((field) => {
-    if (Object.prototype.hasOwnProperty.call(data, field)) {
-      payload[field] = data[field];
-    }
-  });
-
-  return payload;
-};
 
 exports.loginUser = async (req, res) => {
   try {
@@ -24,16 +12,16 @@ exports.loginUser = async (req, res) => {
     const isMatch = await bcrypt.compare(req.body.password, user.password);
     if (!isMatch) return sendError(res, 401, 'Invalid email or password');
     const accessToken = jwt.sign(
-      { id: user._id, role: user.role, email: user.email, name: user.name },
+      { id: user.id, role: user.role, email: user.email, name: user.name },
       environment.jwt.accessSecret,
       { expiresIn: environment.jwt.accessExpiresIn, algorithm: environment.jwt.algorithm }
     );
     const refreshToken = jwt.sign(
-      { id: user._id, role: user.role, email: user.email, name: user.name },
+      { id: user.id, role: user.role, email: user.email, name: user.name },
       environment.jwt.refreshSecret,
       { expiresIn: environment.jwt.refreshExpiresIn, algorithm: environment.jwt.algorithm }
     );
-    const updatedUser = await userService.updateUser(user._id, { lastLoginAt: new Date(), refreshToken });
+    const updatedUser = await userService.updateUser(user.id, { lastLoginAt: new Date().toISOString(), refreshToken });
     return sendSuccess(
       res,
       200,
@@ -41,7 +29,7 @@ exports.loginUser = async (req, res) => {
         accessToken,
         refreshToken,
         user: {
-          id: user._id,
+          id: user.id,
           name: user.name,
           role: user.role,
           lastLoginAt: updatedUser.lastLoginAt,
@@ -62,7 +50,7 @@ exports.generateRefreshToken = async (req, res) => {
       return sendError(res, 403, 'Invalid refresh token');
     }
     const newAccessToken = jwt.sign(
-      { id: user._id, role: user.role, email: user.email, name: user.name },
+      { id: user.id, role: user.role, email: user.email, name: user.name },
       environment.jwt.accessSecret,
       { expiresIn: environment.jwt.accessExpiresIn, algorithm: environment.jwt.algorithm }
     );
@@ -86,15 +74,17 @@ exports.logout = async (req, res) => {
 
 exports.createUser = async (req, res) => {
   try {
+    const isEmailExists = await userService.findOneByEmail(req.body.email);
+    if (isEmailExists) return sendError(res, 409, 'Email already exists');
     const saltRounds = environment.mode === 'development' ? 10 : 12;
     const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
-    const user = await userService.saveUser({ ...getSafeUserData(req.body), password: hashedPassword });
-    const modifiedUser = user.toObject();
+    const user = await userService.saveUser({ ...req.body, password: hashedPassword });
+    const modifiedUser = { ...user };
     delete modifiedUser.password;
     delete modifiedUser.refreshToken;
     return sendSuccess(res, 201, modifiedUser, 'User registered successfully');
   } catch (error) {
-    if (error.code === 11000) return sendError(res, 409, 'Email already exists');
+    if (error.name === 'ConditionalCheckFailedException') return sendError(res, 409, 'Email already exists');
     return sendError(res, 500, error.message);
   }
 };
