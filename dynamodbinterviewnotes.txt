@@ -58,6 +58,7 @@ const userData = Object.assign({}, data);
       ExpressionAttributeValues: {
         ':role': role
       },
+      ScanIndexForward: false,
       ExclusiveStartKey: lastKey,
       Limit: limit
     })
@@ -269,6 +270,107 @@ const userData = Object.assign({}, data);
     user: result.Responses?.[0]?.Item || null,
     order: result.Responses?.[1]?.Item || null,
   };
+
+
+1. What is Partition Key?
+Partition key is the primary identifier in DynamoDB.
+It uniquely identifies items and distributes data internally.
+In our project, we used userId as partition key for fast retrieval.
+
+2. What is Sort Key?
+Sort key is the second part of composite primary key.
+It helps group and sort related data.
+We used it for user orders and timeline-based records.
+
+3. What is Composite Primary Key?
+Combination of partition key and sort key.
+Useful for one-to-many relationships.
+Commonly used in order and transaction systems.
+
+4. What is GSI?
+GSI allows querying using non-primary key fields.
+We created GSIs for email and role-based queries.
+It avoids expensive table scans.
+
+5. Difference Between Query and Scan?
+Query uses indexed keys and is efficient.
+Scan reads the full table and is costly.
+We used Query for login and Scan for admin listing pages.
+
+6. What is Hot Partition?
+Happens when too much traffic hits same partition key.
+Causes throttling and uneven performance.
+Avoided using well-distributed keys.
+
+7. How to Avoid Hot Partition?
+Use evenly distributed partition keys.
+Avoid sequential or repetitive keys.
+Use sharding/random suffixes when needed.
+
+8. What are Access Patterns?
+DynamoDB tables are designed based on query requirements.
+We first identified application queries before designing indexes.
+Example: login by email, fetch orders by user.
+
+9. What is Single Table Design?
+Multiple entities stored in one table.
+Improves performance and reduces joins.
+Mostly used in advanced serverless architectures.
+
+10. What is Throttling?
+AWS temporarily limits requests when capacity exceeds limits.
+Happens during traffic spikes or hot partitions.
+We handled it using retries and exponential backoff.
+
+11. What is On-Demand Capacity?
+AWS automatically scales read/write capacity.
+No manual throughput management needed.
+We used this mode in serverless applications.
+
+12. What is Provisioned Capacity?
+Developers manually configure read/write throughput.
+Better for predictable workloads.
+Helps optimize cost in enterprise systems.
+
+13. What are RCU and WCU?
+RCU means Read Capacity Unit.
+WCU means Write Capacity Unit.
+Used in provisioned capacity mode.
+
+14. What is Pagination?
+DynamoDB returns paginated responses for large datasets.
+Uses LastEvaluatedKey.
+We used it in user listing APIs.
+
+15. What is Eventually Consistent Read?
+Default DynamoDB read behavior.
+Faster and cheaper.
+Slight delay possible after writes.
+
+16. What is Strongly Consistent Read?
+Always returns latest committed data.
+More expensive than eventual consistency.
+Used for critical business data.
+
+17. What are DynamoDB Streams?
+Streams capture table changes in real time.
+Commonly integrated with Lambda.
+We used streams for notifications and async processing.
+
+18. What is TTL?
+Automatically deletes expired records.
+Used for OTPs, sessions, and temp logs.
+Helps reduce storage cost.
+
+19. What are Conditional Writes?
+Operations execute only if condition matches.
+Prevents duplicate or invalid writes.
+Used for unique email validations.
+
+20. What are Transactions?
+Multiple operations succeed or fail together.
+Used for payment and inventory workflows.
+We used TransactWrite for order and stock updates together.
 
 
 
