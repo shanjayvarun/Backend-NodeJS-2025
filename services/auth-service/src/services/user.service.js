@@ -1,5 +1,5 @@
 const { randomUUID } = require('crypto');
-const { GetCommand, PutCommand, QueryCommand, UpdateCommand, DeleteCommand } = require('@aws-sdk/lib-dynamodb');
+const { GetCommand, PutCommand, QueryCommand, UpdateCommand, DeleteCommand, BatchGetCommand, BatchWriteCommand, TransactGetCommand, TransactWriteCommand} = require('@aws-sdk/lib-dynamodb');
 const { docClient } = require('../config/dynamo');
 const { dynamodbUsersTable: TABLE_NAME } = require('../config/env');
 const { buildUserItem } = require('../models/user.model');
@@ -74,9 +74,11 @@ exports.updateUser = async (id, updateData) => {
   if (!user) return null;
 
   const updates = Object.assign({}, updateData);
+  delete updates.id
   updates.updatedAt = new Date().toISOString();
 
   const keys = Object.keys(updates);
+  if (keys.length === 0) return user
   const updateExpressionParts = keys.map((k, i) => '#k' + i + ' = :v' + i);
   const names = {};
   const values = {};
@@ -118,6 +120,26 @@ exports.changePasswordByEmail = async (email, hashedPassword) => {
   );
   return result.Attributes || null;
 };
+
+exports.changePasswordByEmaila = async (email, hashedPassword) => {
+  const user = await exports.findOneByEmail(email);
+  if (!user) return null
+  const result = await docClient.send(new UpdateCommand({
+    TableName: TABLE_NAME,
+    Key: { id: user.id },
+    UpdateExpression: 'SET #password = :password, #updatedAt = :updatedAt',
+    ExpressionAttributeNames: {
+      '#password': 'password',
+      '#updatedAt': 'updatedAt'
+    },
+    ExpressionAttributeValues: {
+      ':password': hashedPassword,
+      ':updatedAt': new Date().toISOString()
+    },
+    ReturnValues: 'ALL_NEW'
+  }))
+  return result.Attributes || null
+}
 
 // Delete user by ID
 exports.deleteUser = async (id) => {

@@ -1,0 +1,275 @@
+DynamoDB Commands
+
+1. PutCommand
+ creates / inserts item
+ used for create a user, add a product, save a item, etc.
+ attributes:
+const userData = Object.assign({}, data);
+  const newUser = buildUserItem(Object.assign({ id: randomUUID() }, userData));
+  try {
+    await docClient.send(
+      new PutCommand({
+        TableName: TABLE_NAME,
+        Item: newUser,
+        ConditionExpression: 'attribute_not_exists(id)',
+      })
+    );
+    return newUser;
+  } catch (error) {
+    if (error.name === 'ConditionalCheckFailedException') {
+      throw new Error('Email already exists');
+    }
+    throw error;
+  }
+
+2. GetCommand
+ used for get user by id, get order by id
+ needs Primary key only that is partition key
+ attributes:
+  const result = await docClient.send(
+    new GetCommand({
+      TableName: TABLE_NAME,
+      Key: { id: id },
+    })
+  );
+  return result.Item || null;
+
+3. QueryCommand
+  const result = await docClient.send(
+    new QueryCommand({
+      TableName: TABLE_NAME,
+      IndexName: 'email-index',
+      KeyConditionExpression: 'email = :email',
+      ExpressionAttributeValues: { ':email': email },
+      Limit: 1,
+    })
+  );
+  return (result.Items && result.Items[0]) || null;
+
+  with pagination
+    const result = await docClient.send(
+    new QueryCommand({
+      TableName: TABLE_NAME,
+      IndexName: 'role-index',
+      KeyConditionExpression: '#role = :role',
+      ExpressionAttributeNames: {
+        '#role': 'role'
+      },
+      ExpressionAttributeValues: {
+        ':role': role
+      },
+      ExclusiveStartKey: lastKey,
+      Limit: limit
+    })
+  );
+  return {
+    items: result.Items || [],
+    lastKey: result.LastEvaluatedKey || null
+  };
+
+4. ScanCommand
+ Used for Listing of Admin Users, Reports and Debugging Purposes
+ attributes
+  const result = await docClient.send(new ScanCommand({
+    TableName: TABLE_NAME,
+    FilterExpression: '#role = :role',
+    ExpressionAttributeNames : {
+      '#role' : 'role'
+    },
+    ExpressionAttributeValues: {
+      ':role' : role
+    },
+    Limit : limit
+  }))
+  return result.Items || []
+
+5. UpdateCommand
+ used for update a profile change passsword update status
+ Need a primary key
+ attributes:
+  const user = await getUserById(id)
+  If (!user) return null
+  const updates = Object.Assign({}, updatedData)
+  updates.updatedAt = new Date().toISOString()
+  const keys = Object.Keys(updates)
+  const modifiedUpdateExpressionKeys = keys.map((k, i) => '#k' + i + '= :v' + i)
+  let Names = {}
+  let Values = {}
+  keys.forEach((k, i) => {
+    Names['#k' + i] = k
+    Values[':v' + i] = updatedData[k]
+  })
+  const result = await docClient.send(UpdateCommand({
+    TableName : 'CRMS-AUTH-DEV'
+    Key: {id : id}
+    UpdateExpression : 'SET ' + modifiedUpdateExpressionKeys.join(', ')
+    ExpressionAttributeNames = Names
+    ExpressionAttributeValues : Values
+    ReturnValues : 'ALL_NEW'
+  }))
+
+  When we want to hardcode the Specific keys to be updatedAt
+    const user = await exports.findOneByEmail(email);
+  if (!user) return null
+  const result = await docClient.send(new UpdateCommand({
+    TableName: TABLE_NAME,
+    Key: { id: user.id },
+    UpdateExpression: 'SET #password = :password, #updatedAt = :updatedAt',
+    ExpressionAttributeNames: {
+      '#password' : 'password',
+      '#updatedAt' : 'updatedAt'
+    },
+    ExpressionAttributeValues: {
+      ':password' : hashedPassword,
+      ':updatedAt' : new Date().toISOString()
+    },
+    ReturnValues: 'ALL_NEW'
+  }))
+  return result.Attributes || null
+
+6. DeleteCommand
+ Used to Delete a User, Remove a product
+ attributes
+  const result = await docClient.send( new DeleteCommand({
+    TableName: TABLE_NAME,
+    Key : { id: id}
+  }))
+  return user
+
+
+7. ListTablesCommand
+ Used for Debugging and Admin Tools
+ new ListTablesCommand({})
+
+8. BatchGetCommand ( Get Mnay Users Togeater )
+ used for get many userby ids, Fetch Cart Products, Bulk reading
+ attributes:
+  const modifiedIds = ids.map((id) => ({
+    id: `USR_${id}`,
+  }));
+  const result = await docClient.send(new BatchGetCommand({
+    RequestItems: {
+      [USERS_TABLE_NAME]: {
+        Keys: modifiedIds
+      }
+    }
+  }));
+  return result.Responses?.[USERS_TABLE_NAME] || null
+
+9. BatchWriteCommand
+ used for Bulk Inserts, bulk Deletes
+ attributes:
+    const BulkUsers = users.map((res) => ({
+    PutRequest: {
+      Item: res
+    }
+  }))
+  const result = await docClient.send(new BatchWriteCommand({
+    RequestItems: {
+      [USERS_TABLE_NAME]: BulkUsers
+    }
+  }))
+  return result.UnprocessedItems || null
+
+  BatchWriteCommand May Throttle ? YES and WHY
+  1. Throttling means AWS temporarily limiting requests when traffic exceeds allowed capacity. 
+  2. Some may Insert and Some may Not to prevent the overload, protect the service and maintain stability
+  3. If DynamoDB can handle: 100 writes/sec and and application sends: 500 writes/sec, AWS may throttle extra requests.
+  4. AWS may: reject requests temporarily, return UnprocessedItems in batch operations
+  5. How to handle throttling? 
+     1. retry failed requests
+     2. reduce request rate
+     3. use on-demand scaling // Capacity Modes - On-Demand (AWS automatically scales capacity.) and Provisioned (Developer sets read/write capacity units.) Exceeding limits can cause throttling.
+
+  Batch Write with Retry Logic
+    const bulkUsers = users.map((user) => ({
+    PutRequest: {
+      Item: user,
+    },
+  }));
+  let unprocessedItems = {
+    [USERS_TABLE_NAME]: bulkUsers,
+  };
+  let retries = 0;
+  const maxRetries = 3;
+  while (
+    Object.keys(unprocessedItems).length > 0 &&
+    retries < maxRetries
+  ) {
+    const result = await docClient.send(
+      new BatchWriteCommand({
+        RequestItems: unprocessedItems,
+      })
+    );
+    unprocessedItems = result.UnprocessedItems || {};
+    if (Object.keys(unprocessedItems).length > 0) {
+      retries++;
+      await new Promise((resolve) =>
+        setTimeout(resolve, retries * 1000)
+      );
+    }
+  }
+  return {
+    success: Object.keys(unprocessedItems).length === 0,
+    unprocessedItems,
+  };
+
+  10. TransactWriteCommand
+   Used For Payments Orders Banking Inventory systems
+   ALL succeed OR ALL fail (Atomic transaction.)
+   Example: When placing order: 
+     Create order
+     Reduce stock
+     Deduct wallet balance
+   If one fails: rollback everything
+  await docClient.send(new TransactWriteCommand({
+    TransactItems: [
+      {
+        Put: {
+          TableName: 'CRMS-DEV-ORDERS',
+          Item: order
+        }
+      },
+      {
+        Update: {
+          TableName: 'CRMS-DEV-PRODUCTS',
+          Key: { id: product.id },
+          UpdateExpression: 'SET stock = stock - :qty',
+          ExpressionAttributeValues: {
+            ':qty': product.qty
+          },
+        }
+      }
+    ]
+  }))
+  return {
+    success: true,
+    message: 'Cart updated successfully',
+  };
+
+11. TransactGetCommand
+ used For Fetch related records together Ensure consistent reads
+  const result = await docClient.send(new TransactGetCommand({
+    TransactItems: [
+      {
+        Get: {
+          TableName: 'CRMS-AUTH-USERS',
+          Key: { 'id': user_id }
+        }
+      },
+      {
+        Get: {
+          TableName: 'CRMS-AUTH-ORDERS',
+          Key: { 'id': odr_id }
+        }
+      }
+    ]
+  }))
+  return {
+    user: result.Responses?.[0]?.Item || null,
+    order: result.Responses?.[1]?.Item || null,
+  };
+
+
+
+   

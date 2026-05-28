@@ -36,9 +36,8 @@ app.get('/health', (_, res) => {
   });
 });
 
-app.get('/ready', async (_, res) => {
+app.get('/ddbready', async (_, res) => {
   try {
-    // We send a lightweight API request to list tables to prove network connectivity
     await ddbClient.send(new ListTablesCommand({ Limit: 1 }));
     res.status(200).json({
       status: true,
@@ -47,7 +46,6 @@ app.get('/ready', async (_, res) => {
     });
   } catch (error) {
     console.error('Readiness probe failed to reach DynamoDB:', error.message);
-
     res.status(503).json({
       status: false,
       service: environment.serviceName,
