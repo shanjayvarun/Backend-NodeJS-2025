@@ -372,6 +372,111 @@ Multiple operations succeed or fail together.
 Used for payment and inventory workflows.
 We used TransactWrite for order and stock updates together.
 
+21. What is DynamoDB Accelerator (DAX)?
+ DAX is an in-memory cache for DynamoDB managed by AWS.
+ It reduces read latency from milliseconds to microseconds.
+ We would use DAX for read-heavy workloads like product catalogs or frequently accessed user data.
+ Without DAX:
+ Read → DynamoDB
+
+ With DAX:
+ Read → DAX Cache → DynamoDB
+
+22. LSI vs GSI
+ | Feature       | LSI                        | GSI                 |
+| ------------- | -------------------------- | ------------------- |
+| Partition Key | Same as table              | Can be different    |
+| Sort Key      | Different                  | Different           |
+| Created       | Only during table creation | Can be added later  |
+| Delete        | Cannot delete separately   | Can delete later    |
+| Throughput    | Shares table throughput    | Separate throughput |
+
+LSI uses the same partition key as the base table.
+GSI can use completely different partition and sort keys.
+In real projects, GSI is used much more frequently than LSI.
+
+23. Why Can't We Delete an LSI?
+ LSI is physically tied to the table structure.
+ DynamoDB creates it when the table is created.
+ Therefore AWS does not allow modifying or deleting it later.
+
+24. Can We Delete a GSI?
+ Yes.
+ GSI is independent of the table schema.
+ AWS allows creating and deleting GSIs after table creation.
+
+25. What Happens If DynamoDB Goes Down In One Region?
+ By default DynamoDB stores data across multiple Availability Zones within the same region.
+ If one AZ fails, DynamoDB continues operating.
+ If the entire AWS region fails, the table becomes unavailable unless Global Tables are configured.
+
+26. What are Global Tables?
+ Global Tables replicate DynamoDB data across multiple AWS regions.
+ Changes in one region are automatically replicated to others.
+ Used for disaster recovery and low-latency global applications.
+ Mumbai Region
+       ↓
+ Singapore Region
+       ↓
+ Frankfurt Region
+
+27. What Happens If Mumbai Region Goes Down?
+ Without Global Tables - Application unavailable
+ With Global Tables - Traffic switches to another region, Data remains available.
+
+28. What is Point-in-Time Recovery (PITR)?
+ PITR continuously backs up DynamoDB data.
+ Allows restoring the table to any second within the retention period.
+ Useful for accidental deletions or bad deployments.
+
+30. Difference Between Backup and PITR
+ Backup
+ Manual or scheduled snapshot.
+ Restore to specific backup.
+ PITR
+ Continuous backup.
+ Restore to exact timestamp.
+
+31. What is Sharding?
+ Sharding distributes data across multiple partitions.
+ Helps avoid hot partitions.
+ Improves scalability and throughput.
+
+32. What are Random Suffixes?
+ When many requests hit the same key:
+ Instead of:
+ USER#1
+ Use:
+ USER#1#A
+ USER#1#B
+ USER#1#C
+ This spreads traffic across multiple partitions to distribute load.
+
+33. What is Multi-AZ Replication?
+ DynamoDB automatically replicates data across multiple Availability Zones inside a region.
+ Managed by AWS.
+ No manual setup required.
+
+34. What Happens to Replicas During Failure?
+ DynamoDB automatically promotes healthy replicas.
+ Applications continue working.
+ No manual failover needed inside a region.
+
+35. What is DynamoDB Streams + Backup Strategy?
+ Streams capture real-time changes.
+ PITR protects against accidental deletion.
+ Global Tables protect against regional failures.
+ Together they provide a complete disaster recovery solution.
+
+ We use DynamoDB's built-in multi-AZ replication for availability within a region.
+ For disaster recovery across regions we use Global Tables.
+ For accidental data loss we enable Point-in-Time Recovery.
+ For event-driven processing we use DynamoDB Streams integrated with Lambda.
+ For read-heavy workloads we can introduce DAX to reduce latency.
+ 
+
+
+
 
 
    
