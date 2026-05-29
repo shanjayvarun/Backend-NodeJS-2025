@@ -121,37 +121,15 @@ exports.changePasswordByEmail = async (email, hashedPassword) => {
   return result.Attributes || null;
 };
 
-exports.changePasswordByEmaila = async (email, hashedPassword) => {
-  const user = await exports.findOneByEmail(email);
-  if (!user) return null
-  const result = await docClient.send(new UpdateCommand({
-    TableName: TABLE_NAME,
-    Key: { id: user.id },
-    UpdateExpression: 'SET #password = :password, #updatedAt = :updatedAt',
-    ExpressionAttributeNames: {
-      '#password': 'password',
-      '#updatedAt': 'updatedAt'
-    },
-    ExpressionAttributeValues: {
-      ':password': hashedPassword,
-      ':updatedAt': new Date().toISOString()
-    },
-    ReturnValues: 'ALL_NEW'
-  }))
-  return result.Attributes || null
-}
-
 // Delete user by ID
 exports.deleteUser = async (id) => {
   const user = await exports.getUserById(id);
   if (!user) return null;
-
   await docClient.send(
     new DeleteCommand({
       TableName: TABLE_NAME,
       Key: { id: id },
     })
   );
-
   return hideSensitiveData(user);
 };
