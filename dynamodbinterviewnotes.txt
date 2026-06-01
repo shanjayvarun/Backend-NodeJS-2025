@@ -475,8 +475,31 @@ In real projects, GSI is used much more frequently than LSI.
  For read-heavy workloads we can introduce DAX to reduce latency.
  
 
+RESPONSES 
+PutCommand = PutCommand returns metadata, not the inserted record.
+GetCommand = returns a Item. 
+BatchGetCommand = Returns result.Responses.['TABLE_NAME']
+BatchWriteCommand = returns result.UnprocessedItems.['TABLE_NAME']
+TransactWriteCommand = returns metdata like PutCommand and BatchWriteCommand (Custom Messages Like)
+Insert User A
+Insert Us
+If User B fails:
+User A ❌
+User B ❌
+User C ❌
+Everything rolls back.
+This is called atomicity.
 
+(BatchWrite
+Up to 25 operations
+Partial success possible
+Faster
 
+vs
 
+TransactWrite
+Up to 100 actions
+All-or-nothing
+Slower but atomic)
 
    
